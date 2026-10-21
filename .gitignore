@@ -22,7 +22,8 @@ env/
 *.sqlite3
 
 # User uploads (never commit real resumes)
-uploads/
+uploads/*
+!uploads/.gitkeep
 
 # TLS material (stretch goal) – never commit private keys
 certs/

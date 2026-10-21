@@ -201,7 +201,8 @@
           })
         })
           .then(function () {
-            if (window.CT) window.CT.toast("Request sent to " + {{ mentor.user.name|tojson }}.", "success");
+            var who = {{ mentor.user.name|tojson }};
+            if (window.CT) window.CT.toast("Request sent to " + who + ".", "success");
             window.CT.closeModal(document.getElementById("requestModal"));
             window.setTimeout(function () { window.location.reload(); }, 700);
           })

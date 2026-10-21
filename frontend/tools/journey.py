@@ -84,9 +84,10 @@ r = register(student, "Sana Student", STUDENT_EMAIL, "student")
 ok("signs up as a student", r.status_code == 302, r.headers.get("Location"))
 ok("lands on the dashboard", r.headers.get("Location", "").endswith("/dashboard.html"))
 
-# The mentor directory is empty until somebody publishes a profile.
-listing = student.get(f"{BASE}/api/mentors", timeout=10).json()
-ok("the directory is empty to start with", listing["total"] == 0, listing)
+# The directory may already hold mentors from a previous run; remember how
+# many so the "draft is hidden" check below is meaningful.
+before = student.get(f"{BASE}/api/mentors", timeout=10).json()["total"]
+print(f"       the directory holds {before} mentor(s)")
 
 print("\n== the mentor ==")
 mentor = requests.Session()
@@ -96,7 +97,11 @@ ok("lands on the mentor onboarding", "/mentors/become" in r.headers.get("Locatio
 
 # A draft profile must not be visible to the student yet.
 listing = student.get(f"{BASE}/api/mentors", timeout=10).json()
-ok("the draft is hidden from the directory", listing["total"] == 0, listing)
+ok(
+    "the draft is hidden from the directory",
+    listing["total"] == before,
+    (before, listing["total"]),
+)
 
 # The mentor completes the profile.
 r = api_post(
@@ -114,14 +119,22 @@ r = api_post(
 ok("publishes the mentor profile", r.status_code == 200, r.status_code)
 
 listing = student.get(f"{BASE}/api/mentors", timeout=10).json()
-ok("the mentor now appears in the directory", listing["total"] == 1, listing)
-if listing["total"]:
-    entry = listing["mentors"][0]
+ok(
+    "the mentor now appears in the directory",
+    listing["total"] == before + 1,
+    (before, listing["total"]),
+)
+new_mentor = [m for m in listing["mentors"] if m["email"] == MENTOR_EMAIL]
+ok("and it is the new one", len(new_mentor) == 1)
+if new_mentor:
+    entry = new_mentor[0]
     print(f"       match {entry['match']}%  reasons: "
           f"{[x['label'] for x in entry['match_reasons']]}")
+    mentor_id = entry["user_id"]
+else:
+    mentor_id = None
 
 print("\n== the request ==")
-mentor_id = listing["mentors"][0]["user_id"]
 r = api_post(
     student,
     "/api/mentorship/requests",

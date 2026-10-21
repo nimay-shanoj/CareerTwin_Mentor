@@ -1,0 +1,193 @@
+{% extends "base_app.html" %}
+
+{% block title %}Network lab — CareerTwin{% endblock %}
+{% block description %}Live view of the chat connection: RTT, frames, bytes, transport and a frame-level event log.{% endblock %}
+{% block page_css %}<link rel="stylesheet" href="/static/css/pages/network.css">{% endblock %}
+
+{% block content %}
+{% from "macros/ui.html" import icon %}
+
+<div style="margin-bottom: var(--sp-6);">
+  <h1 style="margin-bottom: var(--sp-1)">Network lab</h1>
+  <p class="page__subtitle">
+    A live view of the chat connection — round-trip time, frames, bytes and the
+    raw protocol on the wire.
+  </p>
+</div>
+
+<!-- ── Connection cards ────────────────────────────────────────────── -->
+<div class="net-grid">
+  <div class="net-card net-card--accent" id="netStateCard">
+    <div class="net-card__label">{{ icon("wifi") }} Connection</div>
+    <div class="net-card__value" id="netState">Connecting…</div>
+    <div class="net-card__sub">Transport: <span id="netTransport">—</span></div>
+  </div>
+
+  <div class="net-card">
+    <div class="net-card__label">{{ icon("clock") }} Round-trip time</div>
+    <div class="net-card__value" id="rttCurrent">–</div>
+    <div class="net-card__sub">
+      avg <span id="rttAvg">–</span> · min <span id="rttMin">–</span> ·
+      max <span id="rttMax">–</span> · jitter <span id="rttJitter">–</span>
+    </div>
+    <svg class="sparkline" id="rttSparkline" viewBox="0 0 240 48" preserveAspectRatio="none"
+         aria-label="Round-trip time over time" role="img"></svg>
+  </div>
+
+  <div class="net-card">
+    <div class="net-card__label">{{ icon("message-circle") }} Messages</div>
+    <div class="net-card__value" id="msgCount">0 ↑ / 0 ↓</div>
+    <div class="net-card__sub">Clock offset: <span id="clockOffset">–</span></div>
+  </div>
+
+  <div class="net-card">
+    <div class="net-card__label">{{ icon("activity") }} Traffic</div>
+    <div class="net-card__value" id="byteCount">0 B ↑ / 0 B ↓</div>
+    <div class="net-card__sub">Reconnects: <span id="netReconnects">0</span></div>
+  </div>
+</div>
+
+<div class="split split--main">
+  <div class="stack stack--lg">
+
+    <!-- ── Event log ──────────────────────────────────────────────── -->
+    <section class="card">
+      <header class="card__header">
+        <div>
+          <h2 class="card__title">Live event log</h2>
+          <p class="card__subtitle">Every frame that crosses the socket, in order.</p>
+        </div>
+        <div class="row" style="gap: var(--sp-2);">
+          <button class="btn btn--secondary btn--sm" type="button" id="logPause" aria-pressed="false">
+            {{ icon("pause") }}<span>Pause</span>
+          </button>
+          <button class="btn btn--ghost btn--sm" type="button" id="logClear">
+            {{ icon("trash") }}<span>Clear</span>
+          </button>
+          <button class="btn btn--ghost btn--sm" type="button" id="logExport">
+            {{ icon("download") }}<span>CSV</span>
+          </button>
+        </div>
+      </header>
+      <div class="card__body card__body--tight">
+        <div class="net-log" id="logBody"></div>
+        <pre class="net-log__detail" id="logDetail">Select a row to inspect its payload.</pre>
+      </div>
+    </section>
+
+    <!-- ── Simulation ─────────────────────────────────────────────── -->
+    <section class="card">
+      <header class="card__header">
+        <div>
+          <h2 class="card__title">Simulation</h2>
+          <p class="card__subtitle">Client-side only — the server is never modified.</p>
+        </div>
+      </header>
+      <div class="card__body">
+        <div class="sim-panel">
+          <div class="sim-panel__title">
+            {{ icon("triangle-alert") }}
+            Network conditions
+          </div>
+          <p class="sim-panel__note" id="simStatus">Simulation off – frames travel normally.</p>
+
+          <div class="sim-toggle">
+            <input type="checkbox" id="simEnabled">
+            <label for="simEnabled" style="margin:0">Enable simulation</label>
+          </div>
+
+          <div class="sim-row">
+            <div class="sim-row__head">
+              <span>Added latency</span>
+              <span class="sim-row__value" id="simLatencyValue">0 ms</span>
+            </div>
+            <input type="range" id="simLatency" min="0" max="2000" step="50" value="0"
+                   aria-label="Added latency in milliseconds">
+          </div>
+
+          <div class="sim-row" style="margin-bottom:0">
+            <div class="sim-row__head">
+              <span>Packet drop</span>
+              <span class="sim-row__value" id="simDropValue">0 %</span>
+            </div>
+            <input type="range" id="simDrop" min="0" max="100" step="5" value="0"
+                   aria-label="Percentage of frames to drop">
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ── Server panel ──────────────────────────────────────────────── -->
+  <aside class="stack">
+    <section class="card">
+      <header class="card__header">
+        <div>
+          <h2 class="card__title">Server</h2>
+          <p class="card__subtitle">From <span class="mono">/api/network/stats</span></p>
+        </div>
+      </header>
+      <div class="card__body">
+        <div class="compat-table">
+          <div class="compat-table__row"><span>Uptime</span><strong id="srvUptime">–</strong></div>
+          <div class="compat-table__row"><span>WebSocket connections</span><strong id="srvWs">–</strong></div>
+          <div class="compat-table__row"><span>Raw TCP connections</span><strong id="srvTcp">–</strong></div>
+          <div class="compat-table__row"><span>Online users</span><strong id="srvOnline">–</strong></div>
+          <div class="compat-table__row"><span>Frames</span><strong id="srvFrames">–</strong></div>
+          <div class="compat-table__row"><span>Bytes</span><strong id="srvBytes">–</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <header class="card__header">
+        <div><h2 class="card__title">Your connections</h2></div>
+      </header>
+      <div class="card__body">
+        <div class="compat-table" id="srvConnections"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <header class="card__header">
+        <div>
+          <h2 class="card__title">Frame format</h2>
+          <p class="card__subtitle">The raw TCP protocol, in the same order as the bytes on the wire.</p>
+        </div>
+      </header>
+      <div class="card__body">
+        <div class="frame-diagram" aria-hidden="true">
+          <span>MAGIC<br>0x4354</span>
+          <span>VER<br>0x01</span>
+          <span>LENGTH<br>u32</span>
+          <span>PAYLOAD (JSON, UTF-8)</span>
+        </div>
+        <ul class="proto-list">
+          <li><code>HELLO</code><span>Authenticate with a single-use token</span></li>
+          <li><code>WELCOME</code><span>Server greeting + heartbeat interval</span></li>
+          <li><code>SEND</code><span>Send a message (idempotent by client id)</span></li>
+          <li><code>ACK</code><span>Server confirms and assigns a sequence</span></li>
+          <li><code>MSG</code><span>An incoming message</span></li>
+          <li><code>READ</code><span>Read receipt</span></li>
+          <li><code>TYPING</code><span>Typing indicator</span></li>
+          <li><code>PING</code><span>Keepalive probe</span></li>
+          <li><code>PONG</code><span>Keepalive answer</span></li>
+          <li><code>PRESENCE</code><span>User online / offline</span></li>
+          <li><code>ERR</code><span>Error with a stable code</span></li>
+          <li><code>BYE</code><span>Graceful close</span></li>
+        </ul>
+        <p class="small subtle" style="margin-top: var(--sp-4)">
+          See <span class="mono">docs/PROTOCOL.md</span> for the full specification and
+          <span class="mono">docs/WIRESHARK.md</span> for capture instructions.
+        </p>
+      </div>
+    </section>
+  </aside>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/vendor/socket.io.min.js"></script>
+<script src="/static/js/chat.js"></script>
+<script src="/static/js/network.js"></script>
+{% endblock %}

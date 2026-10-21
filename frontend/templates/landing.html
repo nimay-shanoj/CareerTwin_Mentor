@@ -1,0 +1,322 @@
+{% extends "base_public.html" %}
+
+{% block title %}CareerTwin — Plan, practise and get mentored{% endblock %}
+{% block description %}CareerTwin turns your skills into a career plan: resume analysis, skill gap, roadmaps, quizzes, progress tracking and 1-to-1 mentor matching with live chat.{% endblock %}
+{% block page_css %}<link rel="stylesheet" href="/static/css/pages/landing.css">{% endblock %}
+
+{% block nav %}
+<nav class="marketing-nav" id="navbar" aria-label="Main">
+  <div class="marketing-nav__inner">
+    <a class="marketing-nav__brand" href="{{ url_for('index') }}">
+      <span class="marketing-nav__logo">
+        <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-logo"></use></svg>
+      </span>
+      <span>CareerTwin</span>
+    </a>
+
+    <ul class="marketing-nav__links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#workflow">How it works</a></li>
+      <li><a href="#mentorship">Mentorship</a></li>
+    </ul>
+
+    <div class="marketing-nav__actions">
+      <button class="icon-btn" type="button" data-theme-toggle aria-pressed="false" aria-label="Toggle dark mode">
+        <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-moon"></use></svg>
+      </button>
+      {% if current_user.is_authenticated %}
+        <a class="btn btn--primary btn--sm" href="{{ url_for('dashboard_page') }}">Dashboard</a>
+      {% else %}
+        <a class="btn btn--ghost btn--sm" href="{{ url_for('auth.login') }}">Log in</a>
+        <a class="btn btn--primary btn--sm" href="{{ url_for('auth.register') }}">Get started</a>
+      {% endif %}
+      <button class="marketing-nav__toggle" type="button" aria-label="Open menu" aria-expanded="false" data-marketing-toggle>
+        <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-menu"></use></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="marketing-nav__mobile" data-marketing-menu>
+    <a href="#features">Features</a>
+    <a href="#workflow">How it works</a>
+    <a href="#mentorship">Mentorship</a>
+    {% if current_user.is_authenticated %}
+      <a href="{{ url_for('dashboard_page') }}">Dashboard</a>
+    {% else %}
+      <a href="{{ url_for('auth.login') }}">Log in</a>
+      <a href="{{ url_for('auth.register') }}">Get started</a>
+    {% endif %}
+  </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<!-- ── HERO ───────────────────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero__blob hero__blob--1"></div>
+  <div class="hero__blob hero__blob--2"></div>
+  <div class="hero__blob hero__blob--3"></div>
+
+  <div class="hero__inner">
+    <div class="hero__copy reveal">
+      <span class="hero__eyebrow">
+        <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-zap"></use></svg>
+        Eight modules, one career plan
+      </span>
+
+      <h1>
+        One platform to
+        <span class="hero__accent">manage your</span>
+        <span class="hero__accent-strong">career growth</span>
+      </h1>
+
+      <p class="hero__desc">
+        CareerTwin analyses your skills, generates a personalised roadmap, tracks every
+        milestone you finish — and connects you with a mentor who can unblock you.
+      </p>
+
+      <div class="hero__actions">
+        <a class="btn btn--primary btn--lg" href="{{ url_for('auth.register') }}">
+          Get started free
+          <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-arrow-right"></use></svg>
+        </a>
+        <a class="btn btn--secondary btn--lg" href="{{ url_for('auth.login') }}">Log in</a>
+      </div>
+
+      <p class="hero__note">
+        No card required. Your progress stays private to your account.
+      </p>
+    </div>
+
+    <!-- CSS-built product preview – no stock imagery -->
+    <div class="preview reveal" aria-hidden="true">
+      <div class="preview__bar">
+        <span class="preview__dot"></span>
+        <span class="preview__dot"></span>
+        <span class="preview__dot"></span>
+        <span class="preview__url">careertwin.app/dashboard</span>
+      </div>
+      <div class="preview__body">
+        <div class="preview__side">
+          <div class="preview__side-brand"><span></span>CareerTwin</div>
+          <div class="preview__side-item preview__side-item--active"></div>
+          <div class="preview__side-item"></div>
+          <div class="preview__side-item"></div>
+          <div class="preview__side-item"></div>
+          <div class="preview__side-item"></div>
+        </div>
+        <div class="preview__main">
+          <div class="preview__title"></div>
+          <div class="preview__stats">
+            <div class="preview__stat"><span></span><b></b></div>
+            <div class="preview__stat"><span></span><b></b></div>
+            <div class="preview__stat"><span></span><b></b></div>
+          </div>
+          <div class="preview__bars">
+            <div class="preview__bar"></div>
+            <div class="preview__bar"></div>
+            <div class="preview__bar"></div>
+            <div class="preview__bar"></div>
+            <div class="preview__bar"></div>
+            <div class="preview__bar"></div>
+            <div class="preview__bar"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FEATURES ───────────────────────────────────────────────────────── -->
+<section class="section" id="features">
+  <div class="section__head--center reveal">
+    <span class="section__label">Features</span>
+    <h2 class="section__title">Everything you need to accelerate your career</h2>
+    <p class="section__desc">
+      Eight modules working together give you a complete picture of where you are
+      today and exactly what to do next.
+    </p>
+  </div>
+
+  <div class="features-grid" style="margin-top: var(--sp-10);">
+    <article class="feature-card reveal">
+      <div class="feature-card__icon"><svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-user"></use></svg></div>
+      <h3>User profile</h3>
+      <p>Capture your academic background, goals and skills — the foundation for every personalised insight.</p>
+      <span class="feature-card__tag">Personalisation</span>
+    </article>
+
+    <article class="feature-card reveal">
+      <div class="feature-card__icon"><svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-file-text"></use></svg></div>
+      <h3>Resume analyser</h3>
+      <p>Upload your resume and get a score, the skills it contains, and concrete suggestions to improve it.</p>
+      <span class="feature-card__tag">Instant feedback</span>
+    </article>
+
+    <article class="feature-card reveal">
+      <div class="feature-card__icon"><svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-map"></use></svg></div>
+      <h3>Roadmap generator</h3>
+      <p>Get a step-by-step learning path to your target role, broken into milestones you can tick off.</p>
+      <span class="feature-card__tag">Goal planning</span>
+    </article>
+
+    <article class="feature-card reveal">
+      <div class="feature-card__icon"><svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-brain"></use></svg></div>
+      <h3>Skill gap analysis</h3>
+      <p>Compare your current skills against the role benchmark and see precisely which skills are missing.</p>
+      <span class="feature-card__tag">Analytics</span>
+    </article>
+
+    <article class="feature-card reveal">
+      <div class="feature-card__icon"><svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-rocket"></use></svg></div>
+      <h3>Project recommendations</h3>
+      <p>Curated project ideas matched to your skill level and target role, with a suggested tech stack.</p>
+      <span class="feature-card__tag">Hands-on</span>
+    </article>
+
+    <article class="feature-card reveal">
+      <div class="feature-card__icon"><svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-clipboard-check"></use></svg></div>
+      <h3>Quiz &amp; assessment</h3>
+      <p>A twenty-question compatibility assessment that ranks you against every supported career path.</p>
+      <span class="feature-card__tag">Practice</span>
+    </article>
+
+    <article class="feature-card reveal">
+      <div class="feature-card__icon"><svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-trending-up"></use></svg></div>
+      <h3>Progress tracking</h3>
+      <p>Watch your completion rate climb as you work through each milestone of your roadmap.</p>
+      <span class="feature-card__tag">Accountability</span>
+    </article>
+
+    <article class="feature-card reveal" id="mentorship">
+      <div class="feature-card__icon"><svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-users"></use></svg></div>
+      <h3>Mentorship network</h3>
+      <p>Browse verified mentors, request a session, then chat live — over WebSocket in the browser or a raw TCP client on the LAN.</p>
+      <span class="feature-card__tag">Live chat</span>
+    </article>
+  </div>
+</section>
+
+<!-- ── WORKFLOW ───────────────────────────────────────────────────────── -->
+<section class="section section--brand" id="workflow">
+  <div class="section__head--center reveal" style="margin-bottom: var(--sp-10);">
+    <span class="section__label">How it works</span>
+    <h2 class="section__title">Your career journey, structured and simplified</h2>
+    <p class="section__desc">
+      CareerTwin turns a vague aspiration into a clear, actionable path in five guided steps.
+    </p>
+  </div>
+
+  <div class="steps reveal" style="max-width: var(--marketing-max); margin-inline: auto;">
+    <div class="step">
+      <div class="step__num">01</div>
+      <h4>Set up your profile</h4>
+      <p>Tell us your background, goals and target role. It takes less than five minutes.</p>
+    </div>
+    <div class="step">
+      <div class="step__num">02</div>
+      <h4>Analyse resume &amp; skills</h4>
+      <p>Upload your resume. You get a score and a map of your current skill landscape.</p>
+    </div>
+    <div class="step">
+      <div class="step__num">03</div>
+      <h4>Generate your roadmap</h4>
+      <p>Receive a personalised, milestone-based learning path built for your goal.</p>
+    </div>
+    <div class="step">
+      <div class="step__num">04</div>
+      <h4>Build &amp; practise</h4>
+      <p>Work on recommended projects, take the quiz and close skill gaps week by week.</p>
+    </div>
+    <div class="step">
+      <div class="step__num">05</div>
+      <h4>Track &amp; get mentored</h4>
+      <p>Monitor your progress and talk to a mentor in real time when you hit a wall.</p>
+    </div>
+  </div>
+
+  <div class="pathway reveal" style="max-width: 420px; margin: var(--sp-12) auto 0;">
+    <div class="pathway__node">
+      <span class="pathway__dot"></span>
+      <div>
+        <div class="pathway__label">Profile complete</div>
+        <div class="pathway__sub">Foundation ready</div>
+      </div>
+    </div>
+    <div class="pathway__connector"></div>
+    <div class="pathway__node">
+      <span class="pathway__dot"></span>
+      <div>
+        <div class="pathway__label">Resume analysed</div>
+        <div class="pathway__sub">3 improvements suggested</div>
+      </div>
+    </div>
+    <div class="pathway__connector"></div>
+    <div class="pathway__node">
+      <span class="pathway__dot"></span>
+      <div>
+        <div class="pathway__label">Roadmap generated</div>
+        <div class="pathway__sub">Data Analyst — 14 weeks</div>
+      </div>
+    </div>
+    <div class="pathway__connector"></div>
+    <div class="pathway__node">
+      <span class="pathway__dot pathway__dot--dim"></span>
+      <div>
+        <div class="pathway__label">Week 5: SQL mastery</div>
+        <div class="pathway__sub">In progress</div>
+      </div>
+    </div>
+    <div class="pathway__connector"></div>
+    <div class="pathway__node">
+      <span class="pathway__dot pathway__dot--dim"></span>
+      <div>
+        <div class="pathway__label">Capstone project</div>
+        <div class="pathway__sub">Unlocks in 9 weeks</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── MENTORSHIP STRIP ──────────────────────────────────────────────── -->
+<section class="section" id="mentorship-detail">
+  <div class="section__head--center reveal">
+    <span class="section__label">Mentorship</span>
+    <h2 class="section__title">Real people, not just a checklist</h2>
+    <p class="section__desc">
+      Matching is explainable: we score the overlap between your skills, your target
+      role and a mentor's expertise — and tell you exactly why you matched.
+    </p>
+  </div>
+
+  <div class="mentorship-strip reveal" style="margin-top: var(--sp-10);">
+    <div class="mentorship-strip__item">
+      <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-search"></use></svg>
+      <h4>Searchable directory</h4>
+      <p>Filter mentors by expertise, availability and how well they match your goal.</p>
+    </div>
+    <div class="mentorship-strip__item">
+      <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-message-circle"></use></svg>
+      <h4>Live, reliable chat</h4>
+      <p>WebSocket in the browser, or the command-line client over our own TCP protocol.</p>
+    </div>
+    <div class="mentorship-strip__item">
+      <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-activity"></use></svg>
+      <h4>Network lab</h4>
+      <p>Watch RTT, frames and bytes live, and simulate latency or packet loss.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ────────────────────────────────────────────────────────────── -->
+<section class="cta-band">
+  <div class="cta-band__inner reveal">
+    <h2>Start your career plan today</h2>
+    <p>Create a free account, complete your profile and meet a mentor in minutes.</p>
+    <div class="row" style="justify-content:center">
+      <a class="btn btn--accent btn--lg" href="{{ url_for('auth.register') }}">Get started free</a>
+      <a class="btn btn--secondary btn--lg" href="{{ url_for('auth.login') }}">I already have an account</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

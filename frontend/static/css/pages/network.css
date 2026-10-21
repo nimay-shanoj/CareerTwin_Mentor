@@ -1,0 +1,233 @@
+/* ==========================================================================
+   Network lab / connection inspector
+   ========================================================================== */
+
+.net-grid {
+  display: grid;
+  gap: var(--sp-4);
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  margin-bottom: var(--sp-6);
+}
+
+.net-card {
+  padding: var(--sp-5);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  box-shadow: var(--sh-1);
+}
+
+.net-card__label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: var(--sp-2);
+  font-size: var(--fs-12);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-subtle);
+}
+
+.net-card__label svg { width: 14px; height: 14px; }
+
+.net-card__value {
+  font-family: var(--font-display);
+  font-size: var(--fs-24);
+  font-weight: var(--fw-bold);
+  line-height: 1.15;
+  color: var(--text);
+}
+
+.net-card__sub {
+  font-size: var(--fs-12);
+  color: var(--text-subtle);
+}
+
+.net-card--accent .net-card__value { color: var(--brand-700); }
+[data-theme="dark"] .net-card--accent .net-card__value { color: var(--accent); }
+
+/* --- RTT sparkline ---------------------------------------------------------- */
+.sparkline {
+  width: 100%;
+  height: 48px;
+  margin-top: var(--sp-3);
+  overflow: visible;
+}
+
+.sparkline__line {
+  fill: none;
+  stroke: var(--brand-500);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sparkline__area { fill: var(--brand-100); opacity: 0.6; }
+[data-theme="dark"] .sparkline__area { fill: var(--brand-100); opacity: 0.35; }
+
+/* --- Event log -------------------------------------------------------------- */
+.net-log {
+  max-height: 420px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+
+.net-log__row {
+  display: grid;
+  grid-template-columns: 82px 28px 1fr 74px 58px;
+  gap: var(--sp-2);
+  align-items: center;
+  padding: 6px var(--sp-3);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: var(--fs-12);
+  cursor: pointer;
+}
+
+.net-log__row:last-child { border-bottom: 0; }
+.net-log__row:hover { background: var(--surface-sunken); }
+.net-log__row.is-selected { background: var(--brand-100); }
+
+.net-log__time { color: var(--text-subtle); }
+.net-log__dir { font-weight: var(--fw-bold); text-align: center; }
+.net-log__dir--up { color: var(--brand-600); }
+.net-log__dir--down { color: var(--info); }
+.net-log__event { color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.net-log__size { color: var(--text-subtle); text-align: right; }
+.net-log__seq { color: var(--text-subtle); text-align: right; }
+
+.net-log__detail {
+  margin-top: var(--sp-3);
+  padding: var(--sp-4);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--surface-sunken);
+  font-family: var(--font-mono);
+  font-size: var(--fs-12);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 240px;
+  overflow: auto;
+}
+
+/* --- Simulation controls ------------------------------------------------------ */
+.sim-panel {
+  padding: var(--sp-5);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--r-md);
+  background: var(--bg-subtle);
+}
+
+.sim-panel__title {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-2);
+  font-size: var(--fs-14);
+  font-weight: var(--fw-bold);
+}
+
+.sim-panel__title svg { width: 16px; height: 16px; color: var(--warning); }
+
+.sim-panel__note {
+  font-size: var(--fs-12);
+  color: var(--text-subtle);
+  margin-bottom: var(--sp-4);
+}
+
+.sim-row {
+  display: grid;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-4);
+}
+
+.sim-row__head {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  font-size: var(--fs-13);
+  font-weight: var(--fw-medium);
+}
+
+.sim-row__value {
+  font-family: var(--font-mono);
+  color: var(--brand-700);
+}
+
+[data-theme="dark"] .sim-row__value { color: var(--accent); }
+
+input[type="range"] {
+  padding: 0;
+  height: 22px;
+  border: 0;
+  background: transparent;
+  accent-color: var(--brand-500);
+  cursor: pointer;
+}
+
+input[type="range"]:focus-visible { outline: 2px solid var(--brand-500); outline-offset: 2px; }
+
+.sim-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
+}
+
+/* --- Protocol cheat sheet ------------------------------------------------------ */
+.proto-list {
+  display: grid;
+  gap: var(--sp-2);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.proto-list li {
+  display: grid;
+  grid-template-columns: 116px 1fr;
+  gap: var(--sp-3);
+  margin: 0;
+  padding: var(--sp-2) 0;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--fs-13);
+}
+
+.proto-list li:last-child { border-bottom: 0; }
+
+.proto-list code {
+  font-weight: var(--fw-bold);
+  color: var(--brand-700);
+}
+
+[data-theme="dark"] .proto-list code { color: var(--accent); }
+
+.frame-diagram {
+  display: grid;
+  grid-template-columns: 2fr 1fr 3fr 12fr;
+  margin-bottom: var(--sp-4);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  font-family: var(--font-mono);
+  font-size: var(--fs-12);
+  text-align: center;
+}
+
+.frame-diagram span {
+  padding: var(--sp-3) var(--sp-2);
+  border-right: 1px solid var(--border);
+}
+
+.frame-diagram span:last-child { border-right: 0; }
+.frame-diagram span:nth-child(1) { background: var(--brand-100); color: var(--brand-800); }
+.frame-diagram span:nth-child(2) { background: var(--brand-200); color: var(--brand-800); }
+.frame-diagram span:nth-child(3) { background: var(--brand-300); color: var(--brand-900); }
+.frame-diagram span:nth-child(4) { background: var(--surface-sunken); color: var(--text-muted); }
+
+[data-theme="dark"] .frame-diagram span:nth-child(1),
+[data-theme="dark"] .frame-diagram span:nth-child(2),
+[data-theme="dark"] .frame-diagram span:nth-child(3) { color: var(--text); }

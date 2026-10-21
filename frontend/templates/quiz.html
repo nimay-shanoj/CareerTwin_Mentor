@@ -1,0 +1,500 @@
+{% extends "base_app.html" %}
+
+{% block title %}Career quiz — CareerTwin{% endblock %}
+{% block description %}A twenty-question compatibility assessment that ranks you against Python, Backend, Full Stack and Data Analyst roles.{% endblock %}
+{% block page_css %}<link rel="stylesheet" href="/static/css/pages/quiz.css">{% endblock %}
+
+{% block content %}
+{% from "macros/ui.html" import icon %}
+
+<div class="quiz-layout">
+
+  <!-- ── Intro ──────────────────────────────────────────────────────── -->
+  <section id="setup" class="card">
+    <div class="card__body card__body--loose">
+      <span class="section__label" style="margin-bottom: var(--sp-4)">Assessment</span>
+      <h1 style="margin-bottom: var(--sp-3)">Find your best-fit tech role</h1>
+      <p class="quiz-intro muted">
+        Twenty questions covering Python, frontend structure, SQL querying and general
+        computer-science logic. Your answer pattern is scored against each of the four
+        target roles, and the results are saved to your account.
+      </p>
+
+      <div class="row" style="margin: var(--sp-6) 0; gap: var(--sp-2);">
+        <span class="badge badge--info">Python Developer</span>
+        <span class="badge badge--brand">Backend Developer</span>
+        <span class="badge badge--warning">Full Stack Developer</span>
+        <span class="badge badge--accent">Data Analyst</span>
+      </div>
+
+      <button class="btn btn--primary btn--lg" type="button" id="startBtn">
+        {{ icon("play") }}
+        <span>Start the assessment</span>
+      </button>
+
+      <div id="historyBox" hidden style="margin-top: var(--sp-8);">
+        <h2 style="font-size: var(--fs-16); margin-bottom: var(--sp-3)">Previous attempts</h2>
+        <div class="quiz-history" id="historyList"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Question ───────────────────────────────────────────────────── -->
+  <section id="quizBox" hidden>
+    <div class="quiz-progress">
+      <span class="quiz-progress__count" id="questionNum">Question 1 of 20</span>
+      <div class="quiz-progress__bar" role="progressbar" aria-valuenow="0" aria-valuemin="0"
+           aria-valuemax="100" aria-label="Quiz progress" id="quizProgress">
+        <div class="quiz-progress__fill" id="quizProgressFill" style="width: 0%"></div>
+      </div>
+      <span class="quiz-progress__count" id="scoreDisplay">Score: 0</span>
+    </div>
+
+    <div class="quiz-card">
+      <p class="quiz-card__question" id="questionText"></p>
+      <div class="quiz-options" id="options" role="group" aria-label="Answer options"></div>
+    </div>
+
+    <div class="row row--end" style="margin-top: var(--sp-5);">
+      <button class="btn btn--primary" type="button" id="nextBtn" hidden>
+        <span>Next question</span>
+        {{ icon("arrow-right") }}
+      </button>
+    </div>
+
+    <p class="small subtle text-center" style="margin-top: var(--sp-4);">
+      Tip: press <kbd>1</kbd>–<kbd>4</kbd> to answer and <kbd>Enter</kbd> to continue.
+    </p>
+  </section>
+
+  <!-- ── Results ────────────────────────────────────────────────────── -->
+  <section id="resultBox" hidden class="card">
+    <div class="card__body card__body--loose">
+      <span class="section__label">Your result</span>
+      <h2 class="quiz-result__headline" id="finalScore"></h2>
+      <p class="muted" id="finalMsg"></p>
+
+      <h3 style="font-size: var(--fs-16); margin-top: var(--sp-6)">Career compatibility breakdown</h3>
+      <div class="compat-list" id="barsContainer"></div>
+
+      <div class="row" style="margin-top: var(--sp-7);">
+        <button class="btn btn--secondary" type="button" id="retryBtn">Try again</button>
+        <a class="btn btn--primary" href="{{ url_for('dashboard_page') }}">Back to dashboard</a>
+        <a class="btn btn--ghost" href="{{ url_for('roadmap_page') }}">View my roadmap</a>
+      </div>
+    </div>
+  </section>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+/* ==========================================================================
+   Career compatibility assessment.
+
+   The question bank, the weighting model and the payload posted to
+   /api/quiz/submit are preserved EXACTLY as they were – only the
+   presentation changed (one question per screen).
+   ========================================================================== */
+const questions = [
+    // --- PYTHON (1 to 5) ---
+    {
+        q: "1. Which keyword is used to define a function in Python?",
+        opts: ["func", "def", "define", "function"],
+        ans: 1,
+        weights: { "Python Developer": 5, "Backend Developer": 4, "Full Stack Developer": 3, "Data Analyst": 3 }
+    },
+    {
+        q: "2. What is the output of print(type([])) in Python?",
+        opts: ["<class 'tuple'>", "<class 'dict'>", "<class 'list'>", "<class 'array'>"],
+        ans: 2,
+        weights: { "Python Developer": 5, "Backend Developer": 4, "Full Stack Developer": 3, "Data Analyst": 4 }
+    },
+    {
+        q: "3. Which Python data structure is unordered, mutable, and does not allow duplicate elements?",
+        opts: ["List", "Tuple", "Set", "Dictionary"],
+        ans: 2,
+        weights: { "Python Developer": 5, "Data Analyst": 5, "Backend Developer": 4, "Full Stack Developer": 3 }
+    },
+    {
+        q: "4. What is the primary use of the 'pandas' library in Python?",
+        opts: ["Web Development", "Game Design", "Data Analysis & Manipulation", "Cryptography"],
+        ans: 2,
+        weights: { "Data Analyst": 5, "Python Developer": 4, "Backend Developer": 2 }
+    },
+    {
+        q: "5. How do you handle exceptions in Python?",
+        opts: ["try-catch", "try-except", "throw-catch", "do-except"],
+        ans: 1,
+        weights: { "Python Developer": 5, "Backend Developer": 5, "Full Stack Developer": 4, "Data Analyst": 2 }
+    },
+    // --- HTML & CSS (6 to 10) ---
+    {
+        q: "6. Which HTML tag is used for the largest heading?",
+        opts: ["<h6>", "<h1>", "<head>", "<title>"],
+        ans: 1,
+        weights: { "Full Stack Developer": 5, "Python Developer": 1 }
+    },
+    {
+        q: "7. Which CSS property changes the text color of an element?",
+        opts: ["font-color", "text-color", "color", "foreground"],
+        ans: 2,
+        weights: { "Full Stack Developer": 5 }
+    },
+    {
+        q: "8. What is the purpose of the 'flexbox' layout model in CSS?",
+        opts: ["Database connection", "Responsive layout alignment", "Server routing", "Data encryption"],
+        ans: 1,
+        weights: { "Full Stack Developer": 5 }
+    },
+    {
+        q: "9. What does HTML stand for?",
+        opts: ["Hyperlink Text Markup Language", "Hypertext Markup Language", "Home Tool Markup Language", "Hypertext Machine Language"],
+        ans: 1,
+        weights: { "Full Stack Developer": 5 }
+    },
+    {
+        q: "10. In CSS, how do you select an element with the id 'header'?",
+        opts: [".header", "#header", "*header", "header:"],
+        ans: 1,
+        weights: { "Full Stack Developer": 5 }
+    },
+    // --- SQL & DATABASE (11 to 15) ---
+    {
+        q: "11. Which SQL command retrieves data from a database?",
+        opts: ["GET", "FETCH", "SELECT", "RETRIEVE"],
+        ans: 2,
+        weights: { "Data Analyst": 5, "Backend Developer": 5, "Full Stack Developer": 4 }
+    },
+    {
+        q: "12. Which SQL clause is used to filter rows based on conditions?",
+        opts: ["HAVING", "ORDER BY", "WHERE", "GROUP BY"],
+        ans: 2,
+        weights: { "Data Analyst": 5, "Backend Developer": 5, "Full Stack Developer": 4 }
+    },
+    {
+        q: "13. What does a 'PRIMARY KEY' ensure in a table?",
+        opts: ["Unique and non-null values for a column", "Fastest query results", "Links to another table", "Sorted order of records"],
+        ans: 0,
+        weights: { "Backend Developer": 5, "Data Analyst": 5, "Full Stack Developer": 4 }
+    },
+    {
+        q: "14. Which type of database join returns all rows from both tables even if there is no match?",
+        opts: ["INNER JOIN", "LEFT JOIN", "RIGHT JOIN", "FULL OUTER JOIN"],
+        ans: 3,
+        weights: { "Data Analyst": 5, "Backend Developer": 5, "Full Stack Developer": 3 }
+    },
+    {
+        q: "15. What is the purpose of a FOREIGN KEY constraint in SQL?",
+        opts: ["To uniquely identify rows", "To ensure referential integrity between tables", "To speed up data sorting", "To create a table copy"],
+        ans: 1,
+        weights: { "Backend Developer": 5, "Full Stack Developer": 4, "Data Analyst": 3 }
+    },
+    // --- GENERAL CS / LOGIC (16 to 20) ---
+    {
+        q: "16. Which data structure uses the Last-In-First-Out (LIFO) method?",
+        opts: ["Queue", "Array", "Stack", "Linked List"],
+        ans: 2,
+        weights: { "Backend Developer": 5, "Full Stack Developer": 4, "Python Developer": 4, "Data Analyst": 2 }
+    },
+    {
+        q: "17. What is an API?",
+        opts: ["A type of database storage", "Application Programming Interface", "A networking hardware protocol", "A web browser framework"],
+        ans: 1,
+        weights: { "Backend Developer": 5, "Full Stack Developer": 5, "Python Developer": 4 }
+    },
+    {
+        q: "18. What is the average time complexity of the Merge Sort algorithm?",
+        opts: ["O(n)", "O(n^2)", "O(n log n)", "O(log n)"],
+        ans: 2,
+        weights: { "Backend Developer": 5, "Python Developer": 4, "Data Analyst": 3 }
+    },
+    {
+        q: "19. What does CPU stand for?",
+        opts: ["Central Process Unit", "Central Processing Unit", "Core Processing Unit", "Central Program Unit"],
+        ans: 1,
+        weights: { "Backend Developer": 4, "Python Developer": 4, "Full Stack Developer": 4, "Data Analyst": 4 }
+    },
+    {
+        q: "20. In programming, what is recursion?",
+        opts: ["A function calling itself", "A loops structure that runs forever", "A type of database indexing", "A method for web scraping"],
+        ans: 0,
+        weights: { "Python Developer": 5, "Backend Developer": 5, "Full Stack Developer": 4, "Data Analyst": 2 }
+    }
+];
+
+const maxScores = {
+    "Python Developer": 0,
+    "Backend Developer": 0,
+    "Full Stack Developer": 0,
+    "Data Analyst": 0
+};
+questions.forEach(q => {
+    for (let key in q.weights) {
+        maxScores[key] += q.weights[key];
+    }
+});
+
+let current = 0, score = 0, answered = false;
+let userScores = {
+    "Python Developer": 0,
+    "Backend Developer": 0,
+    "Full Stack Developer": 0,
+    "Data Analyst": 0
+};
+
+const COLORS = {
+    "Python Developer": "#4a90e2",
+    "Backend Developer": "#1a5c44",
+    "Full Stack Developer": "#8b5cf6",
+    "Data Analyst": "#f59e0b"
+};
+
+function el(id) { return document.getElementById(id); }
+
+function startQuiz() {
+    current = 0; score = 0; answered = false;
+    userScores = {
+        "Python Developer": 0,
+        "Backend Developer": 0,
+        "Full Stack Developer": 0,
+        "Data Analyst": 0
+    };
+    el("setup").hidden = true;
+    el("resultBox").hidden = true;
+    el("quizBox").hidden = false;
+    showQuestion();
+}
+
+function showQuestion() {
+    answered = false;
+    const q = questions[current];
+    el("questionNum").textContent = "Question " + (current + 1) + " of " + questions.length;
+    el("scoreDisplay").textContent = "Score: " + score;
+
+    const pct = Math.round((current / questions.length) * 100);
+    el("quizProgressFill").style.width = pct + "%";
+    el("quizProgress").setAttribute("aria-valuenow", String(pct));
+
+    el("questionText").textContent = q.q;
+    el("nextBtn").hidden = true;
+
+    const options = el("options");
+    options.textContent = "";
+    q.opts.forEach((option, index) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "quiz-option";
+        button.dataset.index = String(index);
+
+        const marker = document.createElement("span");
+        marker.className = "quiz-option__marker";
+        marker.textContent = String(index + 1);
+
+        const text = document.createElement("span");
+        text.textContent = option;
+
+        button.appendChild(marker);
+        button.appendChild(text);
+        button.addEventListener("click", function () {
+            selectAnswer(index, q.ans);
+        });
+        options.appendChild(button);
+    });
+}
+
+function selectAnswer(selected, correct) {
+    if (answered) return;
+    answered = true;
+    const q = questions[current];
+
+    const buttons = el("options").querySelectorAll(".quiz-option");
+    buttons.forEach((button, i) => {
+        button.disabled = true;
+        if (i === correct) button.classList.add("is-correct");
+        else if (i === selected && selected !== correct) button.classList.add("is-wrong");
+    });
+
+    if (selected === correct) {
+        score++;
+        for (let key in q.weights) {
+            userScores[key] += q.weights[key];
+        }
+    }
+
+    el("scoreDisplay").textContent = "Score: " + score;
+    el("nextBtn").hidden = current >= questions.length - 1;
+
+    if (current === questions.length - 1) {
+        setTimeout(showResult, 700);
+    } else {
+        el("nextBtn").focus();
+    }
+}
+
+function nextQuestion() {
+    current++;
+    showQuestion();
+}
+
+function showResult() {
+    el("quizBox").hidden = true;
+
+    // Calculate compatibility percentages
+    let compatibilities = {};
+    let bestRole = "";
+    let highestPercentage = -1;
+
+    for (let role in maxScores) {
+        let percent = Math.round((userScores[role] / maxScores[role]) * 100);
+        compatibilities[role] = percent;
+        if (percent > highestPercentage) {
+            highestPercentage = percent;
+            bestRole = role;
+        }
+    }
+
+    const strong = highestPercentage >= 75;
+    const msg = strong
+        ? "You show strong compatibility for a career as a " + bestRole + "!"
+        : "Your answers show good potential. Explore the " + bestRole + " pathway to build your skills!";
+
+    const headline = el("finalScore");
+    headline.textContent = "Recommended career: ";
+    const highlight = document.createElement("span");
+    highlight.className = "quiz-result__score";
+    highlight.textContent = bestRole;
+    headline.appendChild(highlight);
+    headline.appendChild(document.createTextNode(" (" + highestPercentage + "% compatibility)"));
+
+    el("finalMsg").textContent = msg;
+
+    // Generate compatibility progress bars
+    const barsContainer = el("barsContainer");
+    barsContainer.textContent = "";
+    Object.keys(compatibilities).forEach(function (role) {
+        const row = document.createElement("div");
+
+        const head = document.createElement("div");
+        head.className = "compat-row__head";
+
+        const name = document.createElement("span");
+        name.textContent = role;
+
+        const value = document.createElement("span");
+        value.className = "compat-row__value";
+        value.textContent = compatibilities[role] + "%";
+
+        head.appendChild(name);
+        head.appendChild(value);
+
+        const track = document.createElement("div");
+        track.className = "progress";
+        track.setAttribute("role", "progressbar");
+        track.setAttribute("aria-valuenow", String(compatibilities[role]));
+        track.setAttribute("aria-valuemin", "0");
+        track.setAttribute("aria-valuemax", "100");
+        track.setAttribute("aria-label", role + " compatibility");
+
+        const fill = document.createElement("div");
+        fill.className = "progress__fill";
+        fill.style.background = COLORS[role] || "#2f9e74";
+
+        track.appendChild(fill);
+        row.appendChild(head);
+        row.appendChild(track);
+        barsContainer.appendChild(row);
+
+        window.requestAnimationFrame(function () {
+            window.requestAnimationFrame(function () {
+                fill.style.width = compatibilities[role] + "%";
+            });
+        });
+    });
+
+    el("resultBox").hidden = false;
+
+    // Submit statistical results to database
+    window.CT.fetchJSON("/api/quiz/submit", {
+        method: "POST",
+        body: JSON.stringify({
+            topic: 'Career Compatibility Assessment',
+            score: score,
+            total_questions: questions.length,
+            percentage: highestPercentage,
+            compatible_career: bestRole,
+            compatibility_scores: compatibilities
+        })
+    })
+        .then(function (data) { console.log("Career assessment submitted:", data); })
+        .catch(function (err) {
+            console.error("Error submitting assessment:", err);
+            if (window.CT) window.CT.toast("Your result could not be saved.", "error");
+        });
+}
+
+function resetQuiz() {
+    el("resultBox").hidden = true;
+    el("setup").hidden = false;
+    loadHistory();
+}
+
+function loadHistory() {
+    window.CT.fetchJSON("/api/quiz/history")
+        .then(function (data) {
+            if (data.history && data.history.length > 0) {
+                const historyBox = el("historyBox");
+                const historyList = el("historyList");
+                historyList.textContent = "";
+
+                data.history.forEach(function (item) {
+                    const row = document.createElement("div");
+                    row.className = "quiz-history__item";
+
+                    const left = document.createElement("span");
+                    left.textContent = "Recommended: " + (item.compatible_career || "—");
+
+                    const right = document.createElement("span");
+                    right.className = "muted";
+                    right.textContent =
+                        "Correct: " + item.score + "/" + item.total_questions +
+                        " · Top match: " + item.percentage + "%" +
+                        (item.taken_at ? " · " + item.taken_at : "");
+
+                    row.appendChild(left);
+                    row.appendChild(right);
+                    historyList.appendChild(row);
+                });
+
+                historyBox.hidden = false;
+            }
+        })
+        .catch(function (err) { console.error("Error loading history:", err); });
+}
+
+/* --- Wiring ------------------------------------------------------------ */
+document.addEventListener("DOMContentLoaded", function () {
+    el("startBtn").addEventListener("click", startQuiz);
+    el("nextBtn").addEventListener("click", nextQuestion);
+    el("retryBtn").addEventListener("click", resetQuiz);
+    loadHistory();
+
+    document.addEventListener("keydown", function (e) {
+        if (el("quizBox").hidden) return;
+        if (e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+
+        if (/^[1-4]$/.test(e.key)) {
+            const buttons = el("options").querySelectorAll(".quiz-option");
+            const target = buttons[parseInt(e.key, 10) - 1];
+            if (target) { e.preventDefault(); target.click(); }
+            return;
+        }
+        if (e.key === "Enter" && answered && !el("nextBtn").hidden) {
+            e.preventDefault();
+            nextQuestion();
+        }
+    });
+});
+</script>
+{% endblock %}

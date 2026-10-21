@@ -1,0 +1,47 @@
+/* ==========================================================================
+   Roadmap timeline
+   ========================================================================== */
+
+.roadmap-steps {
+  margin-top: var(--sp-6);
+}
+
+.roadmap-step__card {
+  padding: var(--sp-5);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  box-shadow: var(--sh-1);
+}
+
+.roadmap-step__index {
+  display: inline-grid;
+  place-items: center;
+  width: 26px; height: 26px;
+  margin-bottom: var(--sp-3);
+  border-radius: var(--r-full);
+  background: var(--brand-700);
+  color: #fff;
+  font-size: var(--fs-12);
+  font-weight: var(--fw-bold);
+}
+
+.roadmap-step__card h3 {
+  margin-bottom: 4px;
+  font-size: var(--fs-16);
+}
+
+.roadmap-step__card p {
+  margin: 0 0 var(--sp-3);
+  font-size: var(--fs-14);
+}
+
+.roadmap-step__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--fs-13);
+  font-weight: var(--fw-semibold);
+}
+
+.roadmap-step__link svg { width: 14px; height: 14px; }

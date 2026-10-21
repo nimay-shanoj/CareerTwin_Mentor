@@ -1,0 +1,118 @@
+{% extends "base_app.html" %}
+
+{% block title %}Messages — CareerTwin{% endblock %}
+{% block description %}Real-time chat with your mentor, with delivery receipts, typing indicators and offline queuing.{% endblock %}
+{% block page_css %}<link rel="stylesheet" href="/static/css/pages/messages.css">{% endblock %}
+
+{% block content %}
+{% from "macros/ui.html" import icon %}
+
+<div id="chatRoot"
+     data-conversation-id="{{ conversation.id if conversation else '' }}"
+     data-current-user-id="{{ current_user.id }}">
+
+  <div class="row row--between" style="margin-bottom: var(--sp-4);">
+    <div>
+      <h1 style="margin-bottom: var(--sp-1)">Messages</h1>
+      <p class="page__subtitle">
+        {% if conversation %}
+          Live chat over WebSocket. Messages are persisted before they are sent.
+        {% else %}
+          Pick a conversation to start chatting.
+        {% endif %}
+      </p>
+    </div>
+    <a class="btn btn--ghost btn--sm" href="{{ url_for('mentorship_bp.mentors_page') }}">
+      {{ icon("users") }}
+      <span>Find a mentor</span>
+    </a>
+  </div>
+
+  <div class="chat {% if conversation %}chat--thread-open{% endif %}" id="chatLayout">
+
+    <!-- ── Conversation list ────────────────────────────────────────── -->
+    <aside class="chat__list" aria-label="Conversations">
+      <div class="chat__list-header">
+        <h2>Conversations</h2>
+      </div>
+      <div class="chat__conversations" id="conversationList"></div>
+    </aside>
+
+    <!-- ── Thread ───────────────────────────────────────────────────── -->
+    <section class="chat__thread" aria-label="Message thread">
+      <div class="chat__thread-header">
+        <button class="chat__back" type="button" id="chatBack">
+          <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-arrow-left"></use></svg>
+          Back
+        </button>
+
+        {% if conversation and other_user %}
+        <span class="avatar">{{ (other_user.name or '?')[:2]|upper }}</span>
+        <div class="grow">
+          <h2>{{ other_user.name }}</h2>
+          <div class="sub" id="threadSubtitle">
+            {% if read_only %}
+              This mentorship has ended — the conversation is read-only.
+            {% else %}
+              Online chat
+            {% endif %}
+          </div>
+        </div>
+        {% else %}
+        <div class="grow">
+          <h2>No conversation selected</h2>
+          <div class="sub">Choose a conversation from the list.</div>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="conn-banner conn-banner--connecting" id="connBanner" role="status" aria-live="polite">
+        <span class="conn-banner__dot"></span>
+        <span data-banner-text>Connecting…</span>
+      </div>
+
+      <div class="chat__messages" id="messageThread" role="log" aria-live="polite" aria-label="Messages"></div>
+
+      <button class="scroll-latest" type="button" id="scrollLatest">
+        <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-chevron-down"></use></svg>
+        Latest
+      </button>
+
+      <div class="typing-indicator" id="typingIndicator" hidden>
+        <span class="typing-indicator__dots"><span></span><span></span><span></span></span>
+        <span>is typing…</span>
+      </div>
+
+      <div class="chat__composer">
+        {% if conversation and not read_only %}
+        <div class="chat__composer-row">
+          <label class="visually-hidden" for="messageInput">Message</label>
+          <textarea id="messageInput" rows="1" maxlength="2000"
+                    placeholder="Write a message… (Enter to send, Shift+Enter for a new line)"></textarea>
+          <button class="btn btn--primary btn--icon" type="button" id="sendBtn" aria-label="Send message">
+            <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-send"></use></svg>
+          </button>
+        </div>
+        <div class="chat__composer-meta">
+          <span id="charCounter">0 / 2000</span>
+          <span>Messages are saved to the database before delivery.</span>
+        </div>
+        {% else %}
+        <p class="small subtle" style="margin:0">
+          {% if conversation %}
+            This conversation is read-only.
+          {% else %}
+            Accept a mentorship request to unlock the chat.
+          {% endif %}
+        </p>
+        {% endif %}
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/vendor/socket.io.min.js"></script>
+<script src="/static/js/chat.js"></script>
+{% endblock %}

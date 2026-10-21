@@ -1,0 +1,175 @@
+{% extends "base_app.html" %}
+
+{% block title %}Insights — CareerTwin{% endblock %}
+{% block description %}Your career readiness snapshot: goal, progress, quiz score and career compatibility.{% endblock %}
+{% block page_css %}<link rel="stylesheet" href="/static/css/pages/overview.css">{% endblock %}
+
+{% block content %}
+{% from "macros/ui.html" import icon %}
+
+<div style="margin-bottom: var(--sp-6);">
+  <h1 style="margin-bottom: var(--sp-1)">Insights</h1>
+  <p class="page__subtitle">A snapshot of where you stand against each career path.</p>
+</div>
+
+<div class="insight-grid">
+  <div class="stat">
+    <div class="stat__icon">{{ icon("target") }}</div>
+    <div class="grow">
+      <div class="stat__label">Career goal</div>
+      <div class="stat__value" id="goalVal">{{ overview.career_goal }}</div>
+    </div>
+  </div>
+
+  <div class="stat">
+    <div class="stat__icon stat__icon--info">{{ icon("trending-up") }}</div>
+    <div class="grow">
+      <div class="stat__label">Overall progress</div>
+      <div class="stat__value" id="progressVal">{{ overview.progress_pct }}%</div>
+    </div>
+  </div>
+
+  <div class="stat">
+    <div class="stat__icon stat__icon--success">{{ icon("check-circle") }}</div>
+    <div class="grow">
+      <div class="stat__label">Tasks done</div>
+      <div class="stat__value" id="tasksDone">{{ overview.tasks_done }}</div>
+    </div>
+  </div>
+
+  <div class="stat">
+    <div class="stat__icon stat__icon--warning">{{ icon("award") }}</div>
+    <div class="grow">
+      <div class="stat__label">Quiz score</div>
+      <div class="stat__value" id="quizVal">{{ overview.quiz_score }}</div>
+      <div class="stat__meta" id="quizDate">{{ overview.latest_quiz_date or '' }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="split split--main">
+  <section class="card">
+    <header class="card__header">
+      <div>
+        <h2 class="card__title">Career compatibility</h2>
+        <p class="card__subtitle">From your most recent assessment.</p>
+      </div>
+    </header>
+    <div class="card__body">
+      <div class="barchart" id="compatChart"></div>
+      <p class="muted small" id="compatEmpty" style="margin-top: var(--sp-4);">
+        Take the career quiz to see how you rank against every role.
+      </p>
+    </div>
+    <footer class="card__footer">
+      <a class="btn btn--primary btn--sm" href="{{ url_for('quiz_page') }}">
+        {{ icon("clipboard-check") }}
+        <span>Take the assessment</span>
+      </a>
+    </footer>
+  </section>
+
+  <aside class="stack">
+    <section class="card">
+      <div class="card__body">
+        <div class="insight-note">
+          {{ icon("info") }}
+          <span>Compatibility is the share of each role's weighted questions you answered correctly.</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <header class="card__header">
+        <div><h2 class="card__title">Suggested next</h2></div>
+      </header>
+      <div class="card__body stack stack--sm">
+        <a class="btn btn--secondary btn--block" href="{{ url_for('skillgap_page') }}">Check my skill gap</a>
+        <a class="btn btn--secondary btn--block" href="{{ url_for('roadmap_page') }}">Open my roadmap</a>
+        <a class="btn btn--secondary btn--block" href="{{ url_for('mentorship_bp.mentors_page') }}">Find a mentor</a>
+      </div>
+    </section>
+  </aside>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (function () {
+    var chart = document.getElementById("compatChart");
+    var empty = document.getElementById("compatEmpty");
+    var ORDER = ["Python Developer", "Backend Developer", "Full Stack Developer", "Data Analyst"];
+    var TONE = {
+      "Python Developer": "barchart__fill--1",
+      "Backend Developer": "barchart__fill--2",
+      "Full Stack Developer": "barchart__fill--3",
+      "Data Analyst": "barchart__fill--4"
+    };
+
+    function renderCompatibility(scores) {
+      chart.textContent = "";
+      var keys = Object.keys(scores || {});
+      if (!keys.length) {
+        empty.hidden = false;
+        return;
+      }
+      empty.hidden = true;
+
+      keys.sort(function (a, b) { return ORDER.indexOf(a) - ORDER.indexOf(b); });
+
+      keys.forEach(function (role) {
+        var pct = Math.round(scores[role]);
+        var row = document.createElement("div");
+        row.className = "barchart__row";
+
+        var head = document.createElement("div");
+        head.className = "barchart__head";
+
+        var name = document.createElement("span");
+        name.textContent = role;
+
+        var value = document.createElement("span");
+        value.className = "barchart__value";
+        value.textContent = pct + "%";
+
+        head.appendChild(name);
+        head.appendChild(value);
+
+        var track = document.createElement("div");
+        track.className = "barchart__track";
+        track.setAttribute("role", "progressbar");
+        track.setAttribute("aria-valuenow", String(pct));
+        track.setAttribute("aria-valuemin", "0");
+        track.setAttribute("aria-valuemax", "100");
+        track.setAttribute("aria-label", role + " compatibility");
+
+        var fill = document.createElement("div");
+        fill.className = "barchart__fill " + (TONE[role] || "barchart__fill--2");
+        track.appendChild(fill);
+
+        row.appendChild(head);
+        row.appendChild(track);
+        chart.appendChild(row);
+
+        // Animate the bar in without causing layout shift.
+        window.requestAnimationFrame(function () {
+          window.requestAnimationFrame(function () {
+            fill.style.width = pct + "%";
+          });
+        });
+      });
+    }
+
+    window.CT.fetchJSON("/api/overview")
+      .then(function (data) {
+        document.getElementById("goalVal").textContent = data.career_goal || "Not Set";
+        document.getElementById("progressVal").textContent = data.progress_pct + "%";
+        document.getElementById("tasksDone").textContent = data.tasks_done || "0 / 0";
+        document.getElementById("quizVal").textContent = data.quiz_score || "No quiz taken";
+        document.getElementById("quizDate").textContent = data.latest_quiz_date || "";
+        renderCompatibility(data.compatibility_scores);
+      })
+      .catch(function () { /* keep the server-rendered values */ });
+  })();
+</script>
+{% endblock %}

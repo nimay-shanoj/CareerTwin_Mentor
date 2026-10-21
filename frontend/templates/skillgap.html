@@ -1,0 +1,189 @@
+{% extends "base_app.html" %}
+
+{% block title %}Skill gap — CareerTwin{% endblock %}
+{% block description %}Compare your current skills against a target role and see exactly what is missing.{% endblock %}
+{% block page_css %}<link rel="stylesheet" href="/static/css/pages/skillgap.css">{% endblock %}
+
+{% set profile = current_user.profile %}
+{% set user_skills = (profile.skills if profile and profile.skills else '') %}
+
+{% block content %}
+{% from "macros/ui.html" import icon, progress_bar %}
+
+<div style="margin-bottom: var(--sp-6);">
+  <h1 style="margin-bottom: var(--sp-1)">Skill gap analysis</h1>
+  <p class="page__subtitle">Pick a target role and compare it against the skills you already have.</p>
+</div>
+
+<div class="split split--main">
+  <div class="stack stack--lg">
+
+    <section class="card">
+      <div class="card__body">
+        <div class="field">
+          <label class="field__label" for="targetRole"><span>Target role</span></label>
+          <select id="targetRole">
+            <option value="">Select a goal</option>
+            {% for career in careers %}
+            <option value="{{ career.name }}" {% if profile and profile.career_goal == career.name %}selected{% endif %}>{{ career.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="userSkills"><span>Your current skills</span></label>
+          <textarea id="userSkills" rows="3" placeholder="e.g. Python, HTML, CSS">{{ user_skills }}</textarea>
+          <p class="field__hint">
+            Pre-filled from your profile. Edit it here to test a different scenario.
+          </p>
+        </div>
+
+        <button class="btn btn--primary" type="button" id="analyzeBtn">
+          {{ icon("search") }}
+          <span>Analyse skill gap</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="card" id="resultCard" hidden>
+      <header class="card__header">
+        <div>
+          <h2 class="card__title" id="resultTitle">Skill gap</h2>
+          <p class="card__subtitle" id="resultSubtitle"></p>
+        </div>
+      </header>
+      <div class="card__body">
+        <div class="skillgap-columns">
+          <div class="skillgap-panel skillgap-panel--have">
+            <h3>{{ icon("check-circle") }} Skills you have</h3>
+            <ul class="chip-list" id="haveList"></ul>
+          </div>
+          <div class="skillgap-panel skillgap-panel--missing">
+            <h3>{{ icon("alert-circle") }} Skills you need</h3>
+            <ul class="chip-list" id="missingList"></ul>
+          </div>
+        </div>
+
+        <div class="skillgap-match">
+          <div class="skillgap-match__head">
+            <span id="scoreText">Select a role to see your match</span>
+            <span class="skillgap-match__pct" id="scorePct">0%</span>
+          </div>
+          <div class="progress progress--lg" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"
+               id="scoreBar" aria-label="Role match">
+            <div class="progress__fill" id="scoreFill" style="width: 0%"></div>
+          </div>
+          <div class="row" style="margin-top: var(--sp-4);">
+            <a class="btn btn--primary btn--sm" href="{{ url_for('roadmap_page') }}">
+              Generate roadmap
+              {{ icon("arrow-right") }}
+            </a>
+            <a class="btn btn--ghost btn--sm" href="{{ url_for('projects_page') }}">See project ideas</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <aside class="stack">
+    <section class="card">
+      <div class="card__body">
+        <h2 class="card__title" style="font-size: var(--fs-16); margin-bottom: var(--sp-3)">Role benchmarks</h2>
+        <div class="stack stack--sm">
+          {% for career in careers %}
+          <div>
+            <div class="row row--between" style="gap: var(--sp-2);">
+              <strong style="font-size: var(--fs-13)">{{ career.name }}</strong>
+              <span class="small subtle">{{ career.skills|length }} skills</span>
+            </div>
+            <div class="small subtle">{{ career.skills|join(', ') }}</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+  </aside>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // The role skill lists come from careers.py (the single source of truth) and
+  // are served by GET /api/careers.
+  (function () {
+    var roleSelect = document.getElementById("targetRole");
+    var skillsField = document.getElementById("userSkills");
+    var analyzeBtn = document.getElementById("analyzeBtn");
+    var resultCard = document.getElementById("resultCard");
+    if (!roleSelect || !analyzeBtn) return;
+
+    var roleSkills = {};
+
+    function chipList(target, items, variant, emptyText) {
+      var list = document.getElementById(target);
+      list.textContent = "";
+      if (!items.length) {
+        var li = document.createElement("li");
+        li.className = "muted small";
+        li.textContent = emptyText;
+        list.appendChild(li);
+        return;
+      }
+      items.forEach(function (item) {
+        var li = document.createElement("li");
+        var chip = document.createElement("span");
+        chip.className = "chip " + variant;
+        chip.textContent = item;
+        li.appendChild(chip);
+        list.appendChild(li);
+      });
+    }
+
+    function analyze() {
+      var role = roleSelect.value;
+      if (!role) {
+        if (window.CT) window.CT.toast("Please select a target role.", "warning");
+        return;
+      }
+      var entered = skillsField.value.split(",").map(function (s) { return s.trim().toLowerCase(); })
+        .filter(function (s) { return s.length; });
+      if (!entered.length) {
+        if (window.CT) window.CT.toast("Please enter your current skills.", "warning");
+        return;
+      }
+
+      var required = roleSkills[role] || [];
+      var have = required.filter(function (s) { return entered.indexOf(s.toLowerCase()) !== -1; });
+      var missing = required.filter(function (s) { return entered.indexOf(s.toLowerCase()) === -1; });
+      var pct = required.length ? Math.round((have.length / required.length) * 100) : 0;
+
+      document.getElementById("resultTitle").textContent = role + " skill gap";
+      document.getElementById("resultSubtitle").textContent =
+        have.length + " of " + required.length + " required skills covered";
+      document.getElementById("scoreText").textContent =
+        "You match " + pct + "% of required skills for " + role;
+      document.getElementById("scorePct").textContent = pct + "%";
+      document.getElementById("scoreFill").style.width = pct + "%";
+      document.getElementById("scoreBar").setAttribute("aria-valuenow", String(pct));
+
+      chipList("haveList", have, "chip--has", "None matched yet.");
+      chipList("missingList", missing, "chip--missing", "You have all the required skills!");
+
+      resultCard.hidden = false;
+    }
+
+    analyzeBtn.addEventListener("click", analyze);
+
+    window.CT.fetchJSON("/api/careers")
+      .then(function (data) {
+        (data.careers || []).forEach(function (career) {
+          roleSkills[career.name] = career.skills;
+        });
+        if (roleSelect.value) analyze();
+      })
+      .catch(function (error) {
+        if (window.CT) window.CT.toast(error.message || "Could not load role data.", "error");
+      });
+  })();
+</script>
+{% endblock %}

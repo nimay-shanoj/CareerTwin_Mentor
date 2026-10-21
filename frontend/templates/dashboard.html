@@ -1,0 +1,181 @@
+{% extends "base_app.html" %}
+
+{% block title %}Dashboard — CareerTwin{% endblock %}
+{% block description %}Your CareerTwin dashboard: next steps, progress stats and every module in one place.{% endblock %}
+{% block page_css %}<link rel="stylesheet" href="/static/css/pages/dashboard.css">{% endblock %}
+
+{% block content %}
+{% from "macros/ui.html" import icon, stat_card %}
+
+<!-- Greeting + next best step -->
+<div class="dash-hero">
+  <div>
+    <h1 class="dash-hero__greeting">Hello, {{ current_user.name.split(' ')[0] }}</h1>
+    <p class="dash-hero__sub">Here is where your career plan stands today.</p>
+  </div>
+</div>
+
+<section class="next-step" id="nextStep">
+  <div>
+    <span class="next-step__label">
+      {{ icon("sparkles") }}
+      Next best step
+    </span>
+    <h2 id="nextStepTitle">Complete your profile</h2>
+    <p id="nextStepText">
+      Tell us your background and target role so every other module can be personalised.
+    </p>
+  </div>
+  <a class="btn btn--accent" id="nextStepCta" href="{{ url_for('profile_bp.profile') }}">
+    <span>Open profile</span>
+    {{ icon("arrow-right") }}
+  </a>
+</section>
+
+<!-- Stats -->
+<div class="stat-row" id="statRow">
+  {{ stat_card("Tasks completed", overview.tasks_done, "clipboard-check", tone="success") }}
+  {{ stat_card("Overall progress", overview.progress_pct ~ "%", "trending-up", tone="info") }}
+  {{ stat_card("Career goal", overview.career_goal, "target") }}
+  {{ stat_card("Quiz score", overview.quiz_score, "award", tone="warning") }}
+</div>
+
+<!-- Modules -->
+<div class="row row--between" style="margin-bottom: var(--sp-4);">
+  <h2 style="margin:0">Your modules</h2>
+  <a class="small" href="{{ url_for('overview_page') }}">See insights →</a>
+</div>
+
+<div class="module-grid">
+  <a class="module-card" href="{{ url_for('profile_bp.profile') }}">
+    <span class="module-card__icon">{{ icon("user") }}</span>
+    <h3>Profile</h3>
+    <p>Your background, skills and target career goal.</p>
+    <span class="module-card__cta">Open {{ icon("arrow-right") }}</span>
+  </a>
+
+  <a class="module-card" href="{{ url_for('resume_page') }}">
+    <span class="module-card__icon">{{ icon("file-text") }}</span>
+    <h3>Resume analyser</h3>
+    <p>Upload a resume and get a score with concrete fixes.</p>
+    <span class="module-card__cta">Open {{ icon("arrow-right") }}</span>
+  </a>
+
+  <a class="module-card" href="{{ url_for('skillgap_page') }}">
+    <span class="module-card__icon">{{ icon("brain") }}</span>
+    <h3>Skill gap</h3>
+    <p>See what you have versus what the role demands.</p>
+    <span class="module-card__cta">Open {{ icon("arrow-right") }}</span>
+  </a>
+
+  <a class="module-card" href="{{ url_for('roadmap_page') }}">
+    <span class="module-card__icon">{{ icon("map") }}</span>
+    <h3>Roadmap</h3>
+    <p>A milestone-by-milestone path to your target role.</p>
+    <span class="module-card__cta">Open {{ icon("arrow-right") }}</span>
+  </a>
+
+  <a class="module-card" href="{{ url_for('projects_page') }}">
+    <span class="module-card__icon">{{ icon("rocket") }}</span>
+    <h3>Projects</h3>
+    <p>Portfolio ideas matched to your goal and level.</p>
+    <span class="module-card__cta">Open {{ icon("arrow-right") }}</span>
+  </a>
+
+  <a class="module-card" href="{{ url_for('quiz_page') }}">
+    <span class="module-card__icon">{{ icon("clipboard-check") }}</span>
+    <h3>Career quiz</h3>
+    <p>Twenty questions, four career paths, one ranked answer.</p>
+    <span class="module-card__cta">Open {{ icon("arrow-right") }}</span>
+  </a>
+
+  <a class="module-card" href="{{ url_for('progress_page') }}">
+    <span class="module-card__icon">{{ icon("trending-up") }}</span>
+    <h3>Progress</h3>
+    <p>Tick off milestones and watch your completion rate climb.</p>
+    <span class="module-card__cta">Open {{ icon("arrow-right") }}</span>
+  </a>
+
+  <a class="module-card" href="{{ url_for('mentorship_bp.mentors_page') }}">
+    <span class="module-card__icon">{{ icon("users") }}</span>
+    <h3>Mentors</h3>
+    <p>Find someone who already did what you want to do.</p>
+    <span class="module-card__cta">Open {{ icon("arrow-right") }}</span>
+  </a>
+</div>
+
+<!-- Mentorship widget -->
+<section class="card" style="margin-top: var(--sp-7);">
+  <div class="card__body mentor-widget">
+    <span class="stat__icon" style="width:52px;height:52px">{{ icon("message-circle") }}</span>
+    <div class="mentor-widget__body">
+      <h3 id="mentorWidgetTitle">Mentorship</h3>
+      <p id="mentorWidgetText">
+        Get matched with a mentor and chat live when you hit a wall.
+      </p>
+    </div>
+    <div class="row">
+      <a class="btn btn--primary" href="{{ url_for('mentorship_bp.mentors_page') }}">Find a mentor</a>
+      <a class="btn btn--ghost" href="{{ url_for('chat_bp.messages_page') }}">Messages</a>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Keep the dashboard numbers live without a full page reload.
+  (function () {
+    if (!window.CT) return;
+
+    function setText(id, value) {
+      var el = document.getElementById(id);
+      if (el && value !== undefined && value !== null) el.textContent = value;
+    }
+
+    function renderNextStep(data) {
+      var title, text, cta, href;
+      if (!data.has_profile || data.profile_complete < 100) {
+        title = "Complete your profile";
+        text = "Tell us your background and target role so every other module can be personalised.";
+        cta = "Open profile";
+        href = "{{ url_for('profile_bp.profile') }}";
+      } else if (!data.has_resume) {
+        title = "Analyse your resume";
+        text = "Upload your resume to get a score, the skills it contains and concrete fixes.";
+        cta = "Analyse resume";
+        href = "{{ url_for('resume_page') }}";
+      } else if (!data.has_quiz) {
+        title = "Take the career quiz";
+        text = "Answer 20 questions and find out which of the four career paths fits you best.";
+        cta = "Start quiz";
+        href = "{{ url_for('quiz_page') }}";
+      } else if (data.progress_pct < 100) {
+        title = "Keep your roadmap moving";
+        text = "You have completed " + data.tasks_done + " milestones. The next one only takes a few minutes.";
+        cta = "Open progress";
+        href = "{{ url_for('progress_page') }}";
+      } else {
+        title = "Roadmap complete — nice work";
+        text = "Every milestone is ticked off. Consider asking a mentor to review your portfolio.";
+        cta = "Find a mentor";
+        href = "{{ url_for('mentorship_bp.mentors_page') }}";
+      }
+      setText("nextStepTitle", title);
+      setText("nextStepText", text);
+      var link = document.getElementById("nextStepCta");
+      if (link) {
+        link.href = href;
+        var span = link.querySelector("span");
+        if (span) span.textContent = cta;
+      }
+    }
+
+    window.CT.fetchJSON("/api/overview")
+      .then(function (data) {
+        renderNextStep(data);
+      })
+      .catch(function () { /* keep the server-rendered values */ });
+  })();
+</script>
+{% endblock %}

@@ -1,0 +1,182 @@
+{# ==========================================================================
+   Shared UI macros.
+   Usage:  {% from "macros/ui.html" import button, input, card, stat_card,
+             badge, empty_state, avatar, icon, progress_bar, progress_ring %}
+   ========================================================================== #}
+
+{# --- Icon ------------------------------------------------------------- #}
+{% macro icon(name, class="") -%}
+<svg class="{{ class }}" aria-hidden="true" focusable="false"><use href="/static/icons/sprite.svg#icon-{{ name }}"></use></svg>
+{%- endmacro %}
+
+{# --- Button ----------------------------------------------------------- #}
+{% macro button(label, variant="primary", size="", href=None, type="submit",
+                icon_name=None, extra_attrs="", class_="") -%}
+{%- set classes = "btn btn--" ~ variant -%}
+{%- if size %}{% set classes = classes ~ " btn--" ~ size %}{% endif -%}
+{%- if class_ %}{% set classes = classes ~ " " ~ class_ %}{% endif -%}
+{%- if href %}
+<a href="{{ href }}" class="{{ classes }}" {{ extra_attrs|safe }}>
+  {%- if icon_name %}{{ icon(icon_name) }}{% endif -%}
+  <span>{{ label }}</span>
+</a>
+{%- else %}
+<button type="{{ type }}" class="{{ classes }}" {{ extra_attrs|safe }}>
+  {%- if icon_name %}{{ icon(icon_name) }}{% endif -%}
+  <span>{{ label }}</span>
+</button>
+{%- endif -%}
+{%- endmacro %}
+
+{# --- Text field -------------------------------------------------------- #}
+{% macro input(name, label=None, value="", type="text", placeholder="",
+               hint=None, required=False, extra_attrs="", class_="") -%}
+<div class="field {{ class_ }}">
+  {% if label %}
+  <label class="field__label" for="f-{{ name }}">
+    <span>{{ label }}</span>
+  </label>
+  {% endif %}
+  <input type="{{ type }}" id="f-{{ name }}" name="{{ name }}"
+         value="{{ value }}" placeholder="{{ placeholder }}"
+         {% if required %}required{% endif %} {{ extra_attrs|safe }}>
+  {% if hint %}<p class="field__hint">{{ hint }}</p>{% endif %}
+</div>
+{%- endmacro %}
+
+{# --- Textarea ---------------------------------------------------------- #}
+{% macro textarea(name, label=None, value="", placeholder="", rows=4, hint=None, required=False, extra_attrs="") -%}
+<div class="field">
+  {% if label %}
+  <label class="field__label" for="f-{{ name }}"><span>{{ label }}</span></label>
+  {% endif %}
+  <textarea id="f-{{ name }}" name="{{ name }}" rows="{{ rows }}"
+            placeholder="{{ placeholder }}"
+            {% if required %}required{% endif %} {{ extra_attrs|safe }}>{{ value }}</textarea>
+  {% if hint %}<p class="field__hint">{{ hint }}</p>{% endif %}
+</div>
+{%- endmacro %}
+
+{# --- Select ------------------------------------------------------------- #}
+{% macro select(name, label=None, options=None, selected=None, hint=None, extra_attrs="") -%}
+<div class="field">
+  {% if label %}
+  <label class="field__label" for="f-{{ name }}"><span>{{ label }}</span></label>
+  {% endif %}
+  <select id="f-{{ name }}" name="{{ name }}" {{ extra_attrs|safe }}>
+    {% for value, text in (options or []) %}
+    <option value="{{ value }}" {% if selected == value %}selected{% endif %}>{{ text }}</option>
+    {% endfor %}
+  </select>
+  {% if hint %}<p class="field__hint">{{ hint }}</p>{% endif %}
+</div>
+{%- endmacro %}
+
+{# --- Card --------------------------------------------------------------- #}
+{% macro card(title=None, subtitle=None, class_="", body_class="") -%}
+<section class="card {{ class_ }}">
+  {% if title %}
+  <header class="card__header">
+    <div>
+      <h3 class="card__title">{{ title }}</h3>
+      {% if subtitle %}<p class="card__subtitle">{{ subtitle }}</p>{% endif %}
+    </div>
+    {{ caller() if caller is defined else "" }}
+  </header>
+  {% endif %}
+  <div class="card__body {{ body_class }}">
+    {{ caller() if caller is defined else "" }}
+  </div>
+</section>
+{%- endmacro %}
+
+{# --- Stat card ---------------------------------------------------------- #}
+{% macro stat_card(label, value, icon_name=None, meta=None, tone="") -%}
+<div class="stat">
+  {% if icon_name %}
+  <div class="stat__icon {% if tone %}stat__icon--{{ tone }}{% endif %}">{{ icon(icon_name) }}</div>
+  {% endif %}
+  <div class="grow">
+    <div class="stat__label">{{ label }}</div>
+    <div class="stat__value">{{ value }}</div>
+    {% if meta %}<div class="stat__meta">{{ meta }}</div>{% endif %}
+  </div>
+</div>
+{%- endmacro %}
+
+{# --- Badge / chip ------------------------------------------------------- #}
+{% macro badge(label, variant="", icon_name=None) -%}
+<span class="badge {% if variant %}badge--{{ variant }}{% endif %}">
+  {%- if icon_name %}{{ icon(icon_name) }}{% endif -%}
+  {{ label }}
+</span>
+{%- endmacro %}
+
+{% macro chip(label, variant="") -%}
+<span class="chip {% if variant %}chip--{{ variant }}{% endif %}">{{ label }}</span>
+{%- endmacro %}
+
+{# --- Avatar ------------------------------------------------------------- #}
+{% macro avatar(name="", size="", online=False) -%}
+{%- set _parts = (name or "?").strip().split(" ") -%}
+{%- set initials = ((_parts[0][:1] ~ (_parts[1][:1] if _parts|length > 1 else ""))|upper) -%}
+<span class="avatar {% if size %}avatar--{{ size }}{% endif %}" title="{{ name }}" aria-hidden="true">{{ initials }}</span>
+{%- endmacro %}
+
+{# --- Empty state --------------------------------------------------------- #}
+{% macro empty_state(title, message="", icon_name="file-text", action_url=None, action_label=None) -%}
+<div class="empty-state">
+  <div class="empty-state__icon">{{ icon(icon_name) }}</div>
+  <h3>{{ title }}</h3>
+  {% if message %}<p>{{ message }}</p>{% endif %}
+  {% if action_url %}
+  <a class="btn btn--primary" href="{{ action_url }}">{{ action_label or "Get started" }}</a>
+  {% endif %}
+</div>
+{%- endmacro %}
+
+{# --- Progress bar -------------------------------------------------------- #}
+{% macro progress_bar(percent, label=None) -%}
+<div class="progress" role="progressbar" aria-valuenow="{{ percent|int }}" aria-valuemin="0" aria-valuemax="100"
+     {% if label %}aria-label="{{ label }}"{% endif %}>
+  <div class="progress__fill" style="width: {{ percent|int }}%"></div>
+</div>
+{%- endmacro %}
+
+{# --- Progress ring -------------------------------------------------------- #}
+{% macro progress_ring(percent, caption="", size=120, stroke=10) -%}
+{%- set r = (size - stroke) / 2 -%}
+{%- set c = 2 * 3.141592653589793 * r -%}
+{%- set offset = c - (c * (percent|int) / 100) -%}
+<div class="progress-ring" style="width:{{ size }}px;height:{{ size }}px">
+  <svg width="{{ size }}" height="{{ size }}" aria-hidden="true">
+    <defs>
+      <linearGradient id="ring-gradient" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="var(--brand-500)"/>
+        <stop offset="100%" stop-color="var(--accent)"/>
+      </linearGradient>
+    </defs>
+    <circle class="progress-ring__track" cx="{{ size/2 }}" cy="{{ size/2 }}" r="{{ r }}"/>
+    <circle class="progress-ring__value" cx="{{ size/2 }}" cy="{{ size/2 }}" r="{{ r }}"
+            stroke-dasharray="{{ c|round(2) }}" stroke-dashoffset="{{ offset|round(2) }}"/>
+  </svg>
+  <div class="progress-ring__label">
+    {{ percent|int }}%
+    {% if caption %}<small>{{ caption }}</small>{% endif %}
+  </div>
+</div>
+{%- endmacro %}
+
+{# --- Alert banner ---------------------------------------------------------- #}
+{% macro alert(message, variant="info", title=None) -%}
+<div class="alert alert--{{ variant }}" role="{% if variant == 'error' %}alert{% else %}status{% endif %}">
+  {% if variant == "error" %}{{ icon("alert-circle") }}
+  {% elif variant == "success" %}{{ icon("check-circle") }}
+  {% elif variant == "warning" %}{{ icon("triangle-alert") }}
+  {% else %}{{ icon("info") }}{% endif %}
+  <div class="alert__body">
+    {% if title %}<strong class="alert__title">{{ title }}</strong>{% endif %}
+    {{ message }}
+  </div>
+</div>
+{%- endmacro %}

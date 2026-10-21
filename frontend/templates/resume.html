@@ -1,0 +1,110 @@
+{% extends "base_app.html" %}
+
+{% block title %}Resume analyser — CareerTwin{% endblock %}
+{% block description %}Upload your resume and get a score, the skills it contains and concrete suggestions to improve it.{% endblock %}
+{% block page_css %}<link rel="stylesheet" href="/static/css/pages/resume.css">{% endblock %}
+
+{% block content %}
+{% from "macros/ui.html" import icon, progress_ring %}
+
+<div style="margin-bottom: var(--sp-6);">
+  <h1 style="margin-bottom: var(--sp-1)">Resume analyser</h1>
+  <p class="page__subtitle">Upload a resume and get an instant score, the skills it contains and what to fix.</p>
+</div>
+
+<div class="split split--main">
+  <div class="stack stack--lg">
+
+    <!-- ── Upload ─────────────────────────────────────────────────── -->
+    <section class="card">
+      <header class="card__header">
+        <div>
+          <h2 class="card__title">Upload a resume</h2>
+          <p class="card__subtitle">PDF, Word, OpenDocument, RTF or plain text. Max 16&nbsp;MB.</p>
+        </div>
+      </header>
+      <div class="card__body">
+        <div class="dropzone" id="dropzone" role="button" tabindex="0"
+             aria-label="Choose a resume file to upload">
+          <div class="dropzone__icon">{{ icon("upload") }}</div>
+          <p class="dropzone__title">Drop your resume here, or click to browse</p>
+          <p class="dropzone__hint">Your file is analysed locally on the server and never shared.</p>
+          <p class="dropzone__file" id="fileName" hidden></p>
+        </div>
+
+        <input type="file" id="resumeFile" accept=".txt,.pdf,.doc,.docx,.rtf,.odt" hidden>
+
+        <div class="row" style="margin-top: var(--sp-5);">
+          <button class="btn btn--primary" type="button" id="analyzeBtn">
+            {{ icon("sparkles") }}
+            <span>Analyse resume</span>
+          </button>
+          <span class="small subtle" id="uploadStatus" role="status" aria-live="polite"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Result ─────────────────────────────────────────────────── -->
+    <section class="card" id="resultCard" hidden>
+      <header class="card__header">
+        <div>
+          <h2 class="card__title">Analysis</h2>
+          <p class="card__subtitle" id="resultSubtitle"></p>
+        </div>
+        <a class="btn btn--secondary btn--sm" href="{{ url_for('roadmap_page') }}">
+          Generate roadmap
+          {{ icon("arrow-right") }}
+        </a>
+      </header>
+      <div class="card__body">
+        <div class="resume-result">
+          <div class="resume-score">
+            {{ progress_ring(0, "Resume score", size=150) }}
+            <p class="resume-score__meta" id="uploadedAt"></p>
+          </div>
+
+          <div class="stack">
+            <div>
+              <h3 style="font-size: var(--fs-16)">Skills found</h3>
+              <ul class="chip-list" id="skillsList"></ul>
+            </div>
+            <div>
+              <h3 style="font-size: var(--fs-16)">Suggestions</h3>
+              <ul class="suggestion-list" id="suggestionsList"></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ── Sidebar: last analysis ───────────────────────────────────── -->
+  <aside class="stack">
+    <section class="card">
+      <header class="card__header">
+        <div>
+          <h2 class="card__title">Last analysis</h2>
+        </div>
+      </header>
+      <div class="card__body" id="lastAnalysis">
+        <p class="muted small" style="margin:0">No resume analysed yet.</p>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card__body">
+        <h3 class="card__title" style="font-size: var(--fs-16); margin-bottom: var(--sp-2)">How scoring works</h3>
+        <p class="small muted" style="margin:0">
+          The analyser looks for a fixed set of technology keywords in the text of your
+          resume. Each distinct skill adds 8 points to a base of 40, capped at 100.
+          Suggestions list the skills that were <em>not</em> detected.
+        </p>
+      </div>
+    </section>
+  </aside>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/resume.js"></script>
+{% endblock %}

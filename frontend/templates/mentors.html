@@ -1,0 +1,275 @@
+{% extends "base_app.html" %}
+
+{% block title %}Mentor directory — CareerTwin{% endblock %}
+{% block description %}Browse and filter mentors by expertise, availability and how well they match your career goal.{% endblock %}
+{% block page_css %}<link rel="stylesheet" href="/static/css/pages/mentors.css">{% endblock %}
+
+{% block content %}
+{% from "macros/ui.html" import icon, avatar, badge %}
+
+<div class="row row--between" style="margin-bottom: var(--sp-6); align-items: flex-start;">
+  <div>
+    <h1 style="margin-bottom: var(--sp-1)">Mentor directory</h1>
+    <p class="page__subtitle">Find someone who already did what you want to do.</p>
+  </div>
+  <div class="row">
+    <a class="btn btn--ghost btn--sm" href="{{ url_for('mentorship_bp.mentorship_page') }}">My requests</a>
+    <a class="btn btn--primary btn--sm" href="{{ url_for('mentorship_bp.become_mentor_page') }}">
+      {{ icon("user") }}
+      <span>{% if my_mentor_profile %}Edit my mentor profile{% else %}Become a mentor{% endif %}</span>
+    </a>
+  </div>
+</div>
+
+<!-- ── Filters ──────────────────────────────────────────────────────── -->
+<div class="mentor-filters">
+  <div class="field" style="margin:0">
+    <label class="field__label" for="q"><span>Search</span></label>
+    <div style="position:relative">
+      <input type="search" id="q" placeholder="Name, company, skill or headline">
+    </div>
+  </div>
+
+  <div class="field" style="margin:0">
+    <label class="field__label" for="expertise"><span>Expertise</span></label>
+    <input type="text" id="expertise" placeholder="e.g. python">
+    <div class="expertise-filters" id="expertiseChips"></div>
+  </div>
+
+  <div class="field" style="margin:0">
+    <label class="field__label" for="matchOnly"><span>Matching</span></label>
+    <div class="row" style="gap: var(--sp-2);">
+      <button class="chip" type="button" id="matchOnly" aria-pressed="false">Matches my goal only</button>
+    </div>
+  </div>
+</div>
+
+<div class="row row--between" style="margin-bottom: var(--sp-4);">
+  <span class="small muted" id="resultCount">Loading mentors…</span>
+  <button class="btn btn--ghost btn--sm" type="button" id="clearFilters">Clear filters</button>
+</div>
+
+<div class="mentor-grid" id="mentorGrid"></div>
+
+<div class="card" id="emptyState" hidden>
+  <div class="card__body empty-state">
+    <div class="empty-state__icon">{{ icon("users") }}</div>
+    <h3>No mentors match those filters</h3>
+    <p>Try a broader search, or clear the filters to see everyone available.</p>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (function () {
+    var grid = document.getElementById("mentorGrid");
+    var q = document.getElementById("q");
+    var expertise = document.getElementById("expertise");
+    var matchOnly = document.getElementById("matchOnly");
+    var chips = document.getElementById("expertiseChips");
+    var count = document.getElementById("resultCount");
+    var empty = document.getElementById("emptyState");
+
+    var COMMON = ["python", "sql", "flask", "django", "javascript", "react", "docker", "aws", "pandas"];
+
+    function buildChips() {
+      COMMON.forEach(function (tag) {
+        var button = document.createElement("button");
+        button.type = "button";
+        button.className = "chip";
+        button.textContent = tag;
+        button.setAttribute("aria-pressed", "false");
+        button.addEventListener("click", function () {
+          var active = button.getAttribute("aria-pressed") === "true";
+          button.setAttribute("aria-pressed", String(!active));
+          expertise.value = active ? "" : tag;
+          load();
+        });
+        chips.appendChild(button);
+      });
+    }
+
+    function mentorCard(mentor) {
+      var card = document.createElement("article");
+      card.className = "mentor-card";
+
+      // head
+      var head = document.createElement("div");
+      head.className = "mentor-card__head";
+
+      var av = document.createElement("span");
+      av.className = "avatar avatar--lg";
+      av.textContent = (mentor.name || "?").split(" ").map(function (p) { return p[0]; })
+        .join("").slice(0, 2).toUpperCase();
+
+      var idBlock = document.createElement("div");
+      idBlock.className = "grow";
+
+      var name = document.createElement("h3");
+      name.className = "mentor-card__name";
+      name.textContent = mentor.name;
+
+      var headline = document.createElement("p");
+      headline.className = "mentor-card__headline";
+      headline.textContent = mentor.headline || "Mentor";
+
+      idBlock.appendChild(name);
+      idBlock.appendChild(headline);
+      head.appendChild(av);
+      head.appendChild(idBlock);
+      card.appendChild(head);
+
+      // meta
+      var meta = document.createElement("div");
+      meta.className = "mentor-card__meta";
+
+      function metaItem(text, iconId) {
+        var span = document.createElement("span");
+        var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.setAttribute("aria-hidden", "true");
+        svg.setAttribute("viewBox", "0 0 24 24");
+        svg.setAttribute("fill", "none");
+        svg.setAttribute("stroke", "currentColor");
+        svg.setAttribute("stroke-width", "2");
+        svg.setAttribute("stroke-linecap", "round");
+        svg.setAttribute("stroke-linejoin", "round");
+        var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("d", iconId);
+        svg.appendChild(path);
+        span.appendChild(svg);
+        var label = document.createElement("span");
+        label.textContent = text;
+        span.appendChild(label);
+        return span;
+      }
+
+      if (mentor.company) meta.appendChild(metaItem(mentor.company, "M3 21h18M5 21V7l7-4 7 4v14"));
+      if (mentor.years_experience) meta.appendChild(metaItem(mentor.years_experience + " yrs", "M12 6v6l4 2"));
+      if (mentor.active_mentees !== undefined) {
+        meta.appendChild(metaItem(mentor.active_mentees + "/" + mentor.max_mentees + " slots", "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"));
+      }
+      card.appendChild(meta);
+
+      // expertise chips
+      var chipList = document.createElement("ul");
+      chipList.className = "chip-list";
+      (mentor.expertise || []).slice(0, 5).forEach(function (tag) {
+        var li = document.createElement("li");
+        var chip = document.createElement("span");
+        chip.className = "chip";
+        chip.textContent = tag;
+        li.appendChild(chip);
+        chipList.appendChild(li);
+      });
+      card.appendChild(chipList);
+
+      // why matched
+      if (mentor.match_reasons && mentor.match_reasons.length) {
+        var why = document.createElement("ul");
+        why.className = "why-matched";
+        mentor.match_reasons.forEach(function (reason) {
+          var li = document.createElement("li");
+          var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          svg.setAttribute("aria-hidden", "true");
+          svg.setAttribute("viewBox", "0 0 24 24");
+          svg.setAttribute("fill", "none");
+          svg.setAttribute("stroke", "currentColor");
+          svg.setAttribute("stroke-width", "2");
+          svg.setAttribute("stroke-linecap", "round");
+          var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+          path.setAttribute("d", reason.kind === "gap"
+            ? "M12 2l2.4 7.4H22l-6 4.6 2.3 7.4-6.3-4.6L5.7 21.4 8 14 2 9.4h7.6z"
+            : "M20 6 9 17l-5-5");
+          svg.appendChild(path);
+          li.appendChild(svg);
+          var span = document.createElement("span");
+          span.textContent = reason.label;
+          li.appendChild(span);
+          why.appendChild(li);
+        });
+        card.appendChild(why);
+      }
+
+      // footer
+      var footer = document.createElement("div");
+      footer.className = "mentor-card__footer";
+
+      var match = document.createElement("div");
+      match.className = "match";
+      var value = document.createElement("span");
+      value.className = "match__value";
+      value.textContent = (mentor.match || 0) + "%";
+      var bar = document.createElement("span");
+      bar.className = "match__bar";
+      var fill = document.createElement("span");
+      fill.className = "match__fill";
+      fill.style.width = (mentor.match || 0) + "%";
+      bar.appendChild(fill);
+      match.appendChild(value);
+      match.appendChild(bar);
+
+      var link = document.createElement("a");
+      link.className = "btn btn--secondary btn--sm";
+      link.href = "/mentors/" + mentor.user_id;
+      link.textContent = "View profile";
+
+      footer.appendChild(match);
+      footer.appendChild(link);
+      card.appendChild(footer);
+
+      return card;
+    }
+
+    function load() {
+      var params = new URLSearchParams();
+      if (q.value.trim()) params.set("q", q.value.trim());
+      if (expertise.value.trim()) params.set("expertise", expertise.value.trim());
+      if (matchOnly.getAttribute("aria-pressed") === "true") params.set("match", "1");
+
+      return window.CT.fetchJSON("/api/mentors?" + params.toString())
+        .then(function (data) {
+          grid.textContent = "";
+          (data.mentors || []).forEach(function (mentor) {
+            grid.appendChild(mentorCard(mentor));
+          });
+          count.textContent = data.total === 1
+            ? "1 mentor" : data.total + " mentors";
+          empty.hidden = (data.mentors || []).length > 0;
+          grid.hidden = (data.mentors || []).length === 0;
+        })
+        .catch(function (error) {
+          if (window.CT) window.CT.toast(error.message || "Could not load mentors.", "error");
+        });
+    }
+
+    var debounce;
+    function scheduleLoad() {
+      window.clearTimeout(debounce);
+      debounce = window.setTimeout(load, 220);
+    }
+
+    q.addEventListener("input", scheduleLoad);
+    expertise.addEventListener("input", scheduleLoad);
+
+    matchOnly.addEventListener("click", function () {
+      var active = matchOnly.getAttribute("aria-pressed") === "true";
+      matchOnly.setAttribute("aria-pressed", String(!active));
+      load();
+    });
+
+    document.getElementById("clearFilters").addEventListener("click", function () {
+      q.value = "";
+      expertise.value = "";
+      matchOnly.setAttribute("aria-pressed", "false");
+      chips.querySelectorAll(".chip").forEach(function (c) {
+        c.setAttribute("aria-pressed", "false");
+      });
+      load();
+    });
+
+    buildChips();
+    load();
+  })();
+</script>
+{% endblock %}

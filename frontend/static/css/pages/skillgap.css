@@ -1,0 +1,57 @@
+/* ==========================================================================
+   Skill gap
+   ========================================================================== */
+
+.skillgap-columns {
+  display: grid;
+  gap: var(--sp-4);
+}
+
+@media (min-width: 768px) {
+  .skillgap-columns { grid-template-columns: 1fr 1fr; }
+}
+
+.skillgap-panel {
+  padding: var(--sp-5);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+
+.skillgap-panel h3 {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-4);
+  font-size: var(--fs-16);
+}
+
+.skillgap-panel h3 svg { width: 17px; height: 17px; }
+
+.skillgap-panel--have h3 { color: var(--success); }
+.skillgap-panel--missing h3 { color: var(--danger); }
+
+.skillgap-match {
+  margin-top: var(--sp-5);
+  padding: var(--sp-5);
+  border-radius: var(--r-md);
+  background: var(--brand-050);
+  border: 1px solid var(--brand-100);
+}
+
+.skillgap-match__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-3);
+}
+
+.skillgap-match__pct {
+  font-family: var(--font-display);
+  font-size: var(--fs-24);
+  font-weight: var(--fw-bold);
+  color: var(--brand-700);
+}
+
+[data-theme="dark"] .skillgap-match__pct { color: var(--accent); }

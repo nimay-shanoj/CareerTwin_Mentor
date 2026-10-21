@@ -1,0 +1,99 @@
+{% extends "base_public.html" %}
+
+{% block title %}Log in — CareerTwin{% endblock %}
+{% block description %}Log in to CareerTwin to continue your career plan, track your progress and message your mentor.{% endblock %}
+{% block page_css %}<link rel="stylesheet" href="/static/css/pages/auth.css">{% endblock %}
+{% block nav %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<div class="auth">
+  <aside class="auth__panel">
+    <a class="auth__brand" href="{{ url_for('index') }}">
+      <span><svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-logo"></use></svg></span>
+      <span>CareerTwin</span>
+    </a>
+
+    <div class="auth__pitch">
+      <h2>Pick up right where you left off.</h2>
+      <p>Your roadmap, your progress and your mentor conversations are all waiting for you.</p>
+      <ul class="auth__points">
+        <li>
+          <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-check-circle"></use></svg>
+          <span>Track every roadmap milestone in one place</span>
+        </li>
+        <li>
+          <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-check-circle"></use></svg>
+          <span>Message your mentor live, with delivery receipts</span>
+        </li>
+        <li>
+          <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-check-circle"></use></svg>
+          <span>See your skills, gaps and resume score at a glance</span>
+        </li>
+      </ul>
+    </div>
+
+    <p class="small" style="color: rgba(255,255,255,.5); margin:0;">
+      CareerTwin — Computer Networks course project.
+    </p>
+  </aside>
+
+  <section class="auth__form-side">
+    <div class="auth__form-wrap">
+      <a class="auth__back" href="{{ url_for('index') }}">
+        <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-arrow-left"></use></svg>
+        Back to home
+      </a>
+
+      <a class="auth__mobile-brand" href="{{ url_for('index') }}">
+        <span class="marketing-nav__logo">
+          <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-logo"></use></svg>
+        </span>
+        <span>CareerTwin</span>
+      </a>
+
+      <h1 class="auth__title">Welcome back</h1>
+      <p class="auth__subtitle">Log in to continue your career journey.</p>
+
+      {% if error %}
+      <div class="alert alert--error form-error" role="alert">
+        <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-alert-circle"></use></svg>
+        <div class="alert__body">{{ error }}</div>
+      </div>
+      {% endif %}
+
+      <form class="auth__form" action="{{ url_for('auth.login') }}" method="POST" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        {% if request.args.get('next') %}
+        <input type="hidden" name="next" value="{{ request.args.get('next') }}">
+        {% endif %}
+
+        <div class="field">
+          <label class="field__label" for="f-email"><span>Email address</span></label>
+          <input type="email" id="f-email" name="email" placeholder="you@example.com"
+                 autocomplete="email" required autofocus>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="f-password"><span>Password</span></label>
+          <div class="field__password">
+            <input type="password" id="f-password" name="password" placeholder="Your password"
+                   autocomplete="current-password" required>
+            <button class="field__password-btn" type="button" data-password-toggle="f-password"
+                    aria-pressed="false">
+              <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-eye"></use></svg>
+              <span data-toggle-label>Show</span>
+            </button>
+          </div>
+        </div>
+
+        <button class="btn btn--primary btn--lg btn--block" type="submit">Log in</button>
+      </form>
+
+      <p class="auth__footer">
+        Don't have an account? <a href="{{ url_for('auth.register') }}">Create one</a>
+      </p>
+    </div>
+  </section>
+</div>
+{% endblock %}

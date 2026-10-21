@@ -1,0 +1,68 @@
+/* ==========================================================================
+   Projects
+   ========================================================================== */
+
+.project-grid {
+  display: grid;
+  gap: var(--sp-4);
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+.project-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-5);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  box-shadow: var(--sh-1);
+  transition: transform var(--dur-1) var(--ease), box-shadow var(--dur-1) var(--ease);
+}
+
+.project-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--sh-2);
+}
+
+.project-card h3 { margin: 0; font-size: var(--fs-16); }
+
+.project-card p {
+  flex: 1;
+  margin: 0;
+  font-size: var(--fs-13);
+  line-height: var(--lh-normal);
+}
+
+.project-card__stack {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-12);
+  color: var(--text-subtle);
+}
+
+.project-card__stack svg { width: 14px; height: 14px; }
+
+.level-badge {
+  position: absolute;
+  top: var(--sp-4);
+  right: var(--sp-4);
+  padding: 3px 10px;
+  border-radius: var(--r-full);
+  font-size: var(--fs-12);
+  font-weight: var(--fw-bold);
+}
+
+.level-badge--Beginner { background: var(--success-soft); color: var(--success); }
+.level-badge--Intermediate { background: var(--warning-soft); color: var(--warning); }
+.level-badge--Advanced { background: var(--danger-soft); color: var(--danger); }
+
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-5);
+}

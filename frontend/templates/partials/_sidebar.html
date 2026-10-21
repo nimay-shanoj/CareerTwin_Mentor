@@ -1,0 +1,70 @@
+{# ==========================================================================
+   Authenticated sidebar
+   ========================================================================== #}
+{% set nav = nav_items if nav_items is defined else [] %}
+{% macro link(endpoint, label, icon_name, badge_count=0) -%}
+{%- set active = request.endpoint == endpoint -%}
+<li>
+  <a class="sidebar__link {% if active %}is-active{% endif %}"
+     href="{{ url_for(endpoint) }}"
+     {% if active %}aria-current="page"{% endif %}>
+    <svg class="sidebar__icon" aria-hidden="true"><use href="/static/icons/sprite.svg#icon-{{ icon_name }}"></use></svg>
+    <span class="sidebar__label">{{ label }}</span>
+    {% if badge_count %}
+    <span class="sidebar__badge">{{ badge_count }}</span>
+    {% endif %}
+  </a>
+</li>
+{%- endmacro %}
+
+{% set unread = g.nav_notifications.unread_messages if g.nav_notifications else 0 %}
+{% set pending = g.nav_notifications.pending_requests if g.nav_notifications else 0 %}
+
+<aside class="sidebar" data-sidebar aria-label="Primary">
+  <a class="sidebar__brand" href="{{ url_for('dashboard_page') }}">
+    <span class="sidebar__logo">
+      <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-logo"></use></svg>
+    </span>
+    <span class="sidebar__brand-text">CareerTwin</span>
+  </a>
+
+  <nav class="sidebar__nav">
+    <div class="sidebar__group">
+      <p class="sidebar__group-label">Plan</p>
+      <ul style="list-style:none;margin:0;padding:0">
+        {{ link('dashboard_page', 'Dashboard', 'chart') }}
+        {{ link('profile_bp.profile', 'Profile', 'user') }}
+        {{ link('resume_page', 'Resume', 'file-text') }}
+        {{ link('skillgap_page', 'Skill gap', 'brain') }}
+        {{ link('roadmap_page', 'Roadmap', 'map') }}
+      </ul>
+    </div>
+
+    <div class="sidebar__group">
+      <p class="sidebar__group-label">Practice</p>
+      <ul style="list-style:none;margin:0;padding:0">
+        {{ link('projects_page', 'Projects', 'rocket') }}
+        {{ link('quiz_page', 'Quiz', 'clipboard-check') }}
+        {{ link('progress_page', 'Progress', 'trending-up') }}
+      </ul>
+    </div>
+
+    <div class="sidebar__group">
+      <p class="sidebar__group-label">Community</p>
+      <ul style="list-style:none;margin:0;padding:0">
+        {{ link('mentorship_bp.mentors_page', 'Mentors', 'users') }}
+        {{ link('chat_bp.messages_page', 'Messages', 'message-circle', unread) }}
+        {{ link('chat_bp.network_page', 'Network lab', 'activity') }}
+      </ul>
+    </div>
+  </nav>
+
+  <div class="sidebar__footer">
+    <button class="sidebar__collapse" type="button" data-sidebar-collapse aria-pressed="false">
+      <svg class="sidebar__icon" aria-hidden="true"><use href="/static/icons/sprite.svg#icon-chevron-left"></use></svg>
+      <span class="sidebar__label">Collapse menu</span>
+    </button>
+  </div>
+</aside>
+
+<div class="sidebar__scrim" data-sidebar-scrim></div>

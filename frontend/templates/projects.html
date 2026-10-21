@@ -1,0 +1,159 @@
+{% extends "base_app.html" %}
+
+{% block title %}Project recommendations — CareerTwin{% endblock %}
+{% block description %}Curated project ideas with a suggested tech stack, matched to your career goal and level.{% endblock %}
+{% block page_css %}<link rel="stylesheet" href="/static/css/pages/projects.css">{% endblock %}
+
+{% block content %}
+{% from "macros/ui.html" import icon %}
+
+<div style="margin-bottom: var(--sp-6);">
+  <h1 style="margin-bottom: var(--sp-1)">Project recommendations</h1>
+  <p class="page__subtitle">Build things, not just certificates. Each project ships with a suggested stack.</p>
+</div>
+
+<section class="card" style="max-width: 520px; margin-bottom: var(--sp-6);">
+  <div class="card__body">
+    <div class="field" style="margin:0">
+      <label class="field__label" for="careerGoal"><span>Career goal</span></label>
+      <select id="careerGoal">
+        <option value="">Select a goal</option>
+        {% for career in careers %}
+        <option value="{{ career.name }}">{{ career.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+</section>
+
+<div class="filter-bar" id="levelFilter" hidden>
+  <span class="small subtle">Filter by level:</span>
+  <button class="chip" type="button" data-level="all" aria-pressed="true">All</button>
+  <button class="chip" type="button" data-level="Beginner" aria-pressed="false">Beginner</button>
+  <button class="chip" type="button" data-level="Intermediate" aria-pressed="false">Intermediate</button>
+  <button class="chip" type="button" data-level="Advanced" aria-pressed="false">Advanced</button>
+</div>
+
+<div class="project-grid" id="projectList"></div>
+
+<div class="card" id="placeholder" style="max-width: 520px;">
+  <div class="card__body">
+    <p class="muted" style="margin:0">Choose a career goal to see project ideas.</p>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (function () {
+    var select = document.getElementById("careerGoal");
+    var grid = document.getElementById("projectList");
+    var placeholder = document.getElementById("placeholder");
+    var filter = document.getElementById("levelFilter");
+    if (!select || !grid) return;
+
+    var careers = {};
+    var currentGoal = "";
+    var activeLevel = "all";
+
+    function levelClass(level) {
+      return "level-badge level-badge--" + level.replace(/\s+/g, "");
+    }
+
+    function render() {
+      var career = careers[currentGoal];
+      grid.textContent = "";
+      if (!career) return;
+
+      var shown = 0;
+      career.projects.forEach(function (project) {
+        if (activeLevel !== "all" && project.level !== activeLevel) return;
+        shown++;
+
+        var card = document.createElement("article");
+        card.className = "project-card";
+
+        var badge = document.createElement("span");
+        badge.className = levelClass(project.level);
+        badge.textContent = project.level;
+
+        var title = document.createElement("h3");
+        title.textContent = project.title;
+
+        var desc = document.createElement("p");
+        desc.textContent = project.desc;
+
+        var stack = document.createElement("div");
+        stack.className = "project-card__stack";
+        var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.setAttribute("aria-hidden", "true");
+        svg.setAttribute("viewBox", "0 0 24 24");
+        svg.setAttribute("fill", "none");
+        svg.setAttribute("stroke", "currentColor");
+        svg.setAttribute("stroke-width", "2");
+        svg.setAttribute("stroke-linecap", "round");
+        var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("d", "m14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z");
+        svg.appendChild(path);
+        stack.appendChild(svg);
+        var stackText = document.createElement("span");
+        stackText.textContent = project.stack;
+        stack.appendChild(stackText);
+
+        card.appendChild(badge);
+        card.appendChild(title);
+        card.appendChild(desc);
+        card.appendChild(stack);
+        grid.appendChild(card);
+      });
+
+      if (!shown) {
+        var empty = document.createElement("p");
+        empty.className = "muted";
+        empty.textContent = "No projects at this level for " + currentGoal + ".";
+        grid.appendChild(empty);
+      }
+
+      grid.hidden = false;
+      placeholder.hidden = true;
+      filter.hidden = false;
+    }
+
+    select.addEventListener("change", function () {
+      currentGoal = select.value;
+      if (!currentGoal) {
+        grid.hidden = true;
+        filter.hidden = true;
+        placeholder.hidden = false;
+        return;
+      }
+      render();
+    });
+
+    filter.addEventListener("click", function (e) {
+      var btn = e.target.closest("[data-level]");
+      if (!btn) return;
+      activeLevel = btn.getAttribute("data-level");
+      filter.querySelectorAll("[data-level]").forEach(function (b) {
+        b.setAttribute("aria-pressed", String(b === btn));
+      });
+      render();
+    });
+
+    window.CT.fetchJSON("/api/careers")
+      .then(function (data) {
+        (data.careers || []).forEach(function (career) {
+          careers[career.name] = career;
+        });
+        var goal = new URLSearchParams(window.location.search).get("goal");
+        if (goal && careers[goal]) {
+          select.value = goal;
+          select.dispatchEvent(new Event("change"));
+        }
+      })
+      .catch(function (error) {
+        if (window.CT) window.CT.toast(error.message || "Could not load projects.", "error");
+      });
+  })();
+</script>
+{% endblock %}

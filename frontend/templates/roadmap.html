@@ -1,0 +1,142 @@
+{% extends "base_app.html" %}
+
+{% block title %}Roadmap — CareerTwin{% endblock %}
+{% block description %}A milestone-by-milestone roadmap for your target career, linked to the progress tracker.{% endblock %}
+{% block page_css %}<link rel="stylesheet" href="/static/css/pages/roadmap.css">{% endblock %}
+
+{% block content %}
+{% from "macros/ui.html" import icon %}
+
+<div style="margin-bottom: var(--sp-6);">
+  <h1 style="margin-bottom: var(--sp-1)">Roadmap generator</h1>
+  <p class="page__subtitle">Pick a goal and get a step-by-step path. Every step links to the tasks in your progress tracker.</p>
+</div>
+
+<section class="card" style="max-width: 520px; margin-bottom: var(--sp-6);">
+  <div class="card__body">
+    <div class="field" style="margin:0">
+      <label class="field__label" for="career"><span>Career goal</span></label>
+      <select id="career">
+        <option value="">Select a goal</option>
+        {% for career in careers %}
+        <option value="{{ career.name }}">{{ career.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button class="btn btn--primary" type="button" id="generateBtn" style="margin-top: var(--sp-4);">
+      {{ icon("map") }}
+      <span>Generate roadmap</span>
+    </button>
+  </div>
+</section>
+
+<div class="timeline roadmap-steps" id="roadmap" hidden></div>
+
+<div class="card" id="placeholder" style="max-width: 520px;">
+  <div class="card__body">
+    <p class="muted" style="margin:0">
+      Choose a career goal above to see its roadmap.
+    </p>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (function () {
+    var select = document.getElementById("career");
+    var button = document.getElementById("generateBtn");
+    var timeline = document.getElementById("roadmap");
+    var placeholder = document.getElementById("placeholder");
+    if (!select || !button) return;
+
+    var careers = {};
+
+    function render(career) {
+      timeline.textContent = "";
+
+      career.roadmap.forEach(function (step, index) {
+        var item = document.createElement("div");
+        item.className = "timeline__item";
+
+        var dot = document.createElement("span");
+        dot.className = "timeline__dot";
+        item.appendChild(dot);
+
+        var card = document.createElement("div");
+        card.className = "roadmap-step__card";
+
+        var idx = document.createElement("span");
+        idx.className = "roadmap-step__index";
+        idx.textContent = String(index + 1).padStart(2, "0");
+
+        var title = document.createElement("h3");
+        title.textContent = step.title;
+
+        var desc = document.createElement("p");
+        desc.textContent = step.detail;
+
+        card.appendChild(idx);
+        card.appendChild(title);
+        card.appendChild(desc);
+
+        // Link to the matching progress tasks for this career.
+        var link = document.createElement("a");
+        link.className = "roadmap-step__link";
+        link.href = "/progress?goal=" + encodeURIComponent(career.name);
+        link.textContent = "Track these tasks";
+        var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.setAttribute("aria-hidden", "true");
+        svg.setAttribute("viewBox", "0 0 24 24");
+        svg.setAttribute("fill", "none");
+        svg.setAttribute("stroke", "currentColor");
+        svg.setAttribute("stroke-width", "2");
+        svg.setAttribute("stroke-linecap", "round");
+        svg.setAttribute("stroke-linejoin", "round");
+        var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("d", "M5 12h14");
+        var poly = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+        poly.setAttribute("points", "12 5 19 12 12 19");
+        svg.appendChild(path);
+        svg.appendChild(poly);
+        link.appendChild(svg);
+
+        card.appendChild(link);
+        item.appendChild(card);
+        timeline.appendChild(item);
+      });
+
+      timeline.hidden = false;
+      placeholder.hidden = true;
+    }
+
+    function generate() {
+      var name = select.value;
+      if (!name) {
+        if (window.CT) window.CT.toast("Please select a career goal.", "warning");
+        return;
+      }
+      var career = careers[name];
+      if (career) render(career);
+    }
+
+    button.addEventListener("click", generate);
+
+    window.CT.fetchJSON("/api/careers")
+      .then(function (data) {
+        (data.careers || []).forEach(function (career) {
+          careers[career.name] = career;
+        });
+        var profile = document.getElementById("career");
+        var goal = new URLSearchParams(window.location.search).get("goal");
+        if (goal && careers[goal]) {
+          select.value = goal;
+          generate();
+        }
+      })
+      .catch(function (error) {
+        if (window.CT) window.CT.toast(error.message || "Could not load roadmaps.", "error");
+      });
+  })();
+</script>
+{% endblock %}

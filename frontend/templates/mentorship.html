@@ -1,0 +1,170 @@
+{% extends "base_app.html" %}
+
+{% block title %}Mentorship — CareerTwin{% endblock %}
+{% block description %}Manage incoming and outgoing mentorship requests and your active mentorships.{% endblock %}
+{% block page_css %}<link rel="stylesheet" href="/static/css/pages/mentors.css">{% endblock %}
+
+{% block content %}
+{% from "macros/ui.html" import icon %}
+
+<div class="row row--between" style="margin-bottom: var(--sp-6); align-items: flex-start;">
+  <div>
+    <h1 style="margin-bottom: var(--sp-1)">Mentorship</h1>
+    <p class="page__subtitle">Requests, active mentorships and the conversations they unlock.</p>
+  </div>
+  <a class="btn btn--secondary btn--sm" href="{{ url_for('mentorship_bp.mentors_page') }}">
+    {{ icon("search") }}
+    <span>Find a mentor</span>
+  </a>
+</div>
+
+<div class="tabs" style="margin-bottom: var(--sp-5); max-width: 420px;">
+  <button class="tabs__tab is-active" type="button" data-tab="incoming" role="tab" aria-selected="true">
+    Incoming
+    {% if incoming %}<span class="badge badge--brand" style="margin-left:6px">{{ incoming|length }}</span>{% endif %}
+  </button>
+  <button class="tabs__tab" type="button" data-tab="outgoing" role="tab" aria-selected="false">
+    Outgoing
+    {% if outgoing %}<span class="badge badge--brand" style="margin-left:6px">{{ outgoing|length }}</span>{% endif %}
+  </button>
+  <button class="tabs__tab" type="button" data-tab="active" role="tab" aria-selected="false">Active</button>
+</div>
+
+<!-- Incoming -->
+<section data-panel="incoming">
+  <div class="request-list">
+    {% set pending_incoming = incoming|selectattr('status', 'equalto', 'pending')|list %}
+    {% for row in pending_incoming %}
+      <article class="request-card" data-request-id="{{ row.id }}">
+        <span class="avatar">{{ row.other_name[:2]|upper }}</span>
+        <div class="request-card__body">
+          <h3>{{ row.other_name }}</h3>
+          <p class="small subtle" style="margin:0">Wants mentorship · sent {{ row.created_at.strftime('%d %b %Y') }}</p>
+          {% if row.message %}
+          <p class="request-card__msg">“{{ row.message }}”</p>
+          {% endif %}
+        </div>
+        <div class="request-card__actions">
+          <button class="btn btn--primary btn--sm" data-action="accept" data-id="{{ row.id }}">Accept</button>
+          <button class="btn btn--danger-ghost btn--sm" data-action="decline" data-id="{{ row.id }}">Decline</button>
+        </div>
+      </article>
+    {% else %}
+    <div class="card"><div class="card__body empty-state">
+      <div class="empty-state__icon">{{ icon("message-circle") }}</div>
+      <h3>No incoming requests</h3>
+      <p>When a student asks you to be their mentor, the request appears here.</p>
+    </div></div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- Outgoing -->
+<section data-panel="outgoing" hidden>
+  <div class="request-list">
+    {% for row in outgoing %}
+    <article class="request-card" data-request-id="{{ row.id }}">
+      <span class="avatar">{{ row.other_name[:2]|upper }}</span>
+      <div class="request-card__body">
+        <h3>{{ row.other_name }}</h3>
+        <p class="small subtle" style="margin:0">
+          {{ row.status|capitalize }} · sent {{ row.created_at.strftime('%d %b %Y') }}
+        </p>
+        {% if row.message %}
+        <p class="request-card__msg">“{{ row.message }}”</p>
+        {% endif %}
+      </div>
+      <div class="request-card__actions">
+        {% if row.status == 'pending' %}
+        <button class="btn btn--danger-ghost btn--sm" data-action="cancel" data-id="{{ row.id }}">Cancel</button>
+        {% elif row.conversation_id %}
+        <a class="btn btn--primary btn--sm" href="/messages/{{ row.conversation_id }}">Open chat</a>
+        {% endif %}
+      </div>
+    </article>
+    {% else %}
+    <div class="card"><div class="card__body empty-state">
+      <div class="empty-state__icon">{{ icon("users") }}</div>
+      <h3>No outgoing requests</h3>
+      <p>Browse the mentor directory to find someone who fits your goal.</p>
+      <a class="btn btn--primary" href="{{ url_for('mentorship_bp.mentors_page') }}">Find a mentor</a>
+    </div></div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- Active mentorships -->
+<section data-panel="active" hidden>
+  <div class="request-list">
+    {% set active = (incoming + outgoing)|selectattr('status', 'equalto', 'accepted')|list %}
+    {% for row in active %}
+    <article class="request-card">
+      <span class="avatar">{{ row.other_name[:2]|upper }}</span>
+      <div class="request-card__body">
+        <h3>{{ row.other_name }}</h3>
+        <p class="small subtle" style="margin:0">
+          Active mentorship · started {{ (row.responded_at or row.created_at).strftime('%d %b %Y') }}
+        </p>
+      </div>
+      <div class="request-card__actions">
+        {% if row.conversation_id %}
+        <a class="btn btn--primary btn--sm" href="/messages/{{ row.conversation_id }}">Open chat</a>
+        {% endif %}
+        <button class="btn btn--danger-ghost btn--sm" data-action="end" data-id="{{ row.id }}">End</button>
+      </div>
+    </article>
+    {% else %}
+    <div class="card"><div class="card__body empty-state">
+      <div class="empty-state__icon">{{ icon("message-circle") }}</div>
+      <h3>No active mentorships</h3>
+      <p>Accept a request to start a conversation with your mentor.</p>
+    </div></div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (function () {
+    var tabs = document.querySelectorAll("[data-tab]");
+    var panels = document.querySelectorAll("[data-panel]");
+
+    tabs.forEach(function (tab) {
+      tab.addEventListener("click", function () {
+        var name = tab.getAttribute("data-tab");
+        tabs.forEach(function (t) {
+          var active = t === tab;
+          t.classList.toggle("is-active", active);
+          t.setAttribute("aria-selected", String(active));
+        });
+        panels.forEach(function (panel) {
+          panel.hidden = panel.getAttribute("data-panel") !== name;
+        });
+      });
+    });
+
+    document.addEventListener("click", function (e) {
+      var btn = e.target.closest("[data-action]");
+      if (!btn) return;
+      var action = btn.getAttribute("data-action");
+      var id = btn.getAttribute("data-id");
+
+      if (action === "end" && !window.confirm("End this mentorship? The conversation becomes read-only.")) {
+        return;
+      }
+
+      btn.classList.add("is-loading");
+      window.CT.fetchJSON("/api/mentorship/requests/" + id + "/" + action, { method: "POST" })
+        .then(function () {
+          if (window.CT) window.CT.toast("Request " + action + "ed.", "success");
+          window.setTimeout(function () { window.location.reload(); }, 600);
+        })
+        .catch(function (error) {
+          btn.classList.remove("is-loading");
+          if (window.CT) window.CT.toast(error.message || "Could not update the request.", "error");
+        });
+    });
+  })();
+</script>
+{% endblock %}

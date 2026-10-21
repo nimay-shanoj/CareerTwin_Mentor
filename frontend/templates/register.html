@@ -1,0 +1,177 @@
+{% extends "base_public.html" %}
+
+{% block title %}Create your account — CareerTwin{% endblock %}
+{% block description %}Create a free CareerTwin account to get a personalised career roadmap, skill gap analysis and a mentor.{% endblock %}
+{% block page_css %}<link rel="stylesheet" href="/static/css/pages/auth.css">{% endblock %}
+{% block nav %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<div class="auth">
+  <aside class="auth__panel">
+    <a class="auth__brand" href="{{ url_for('index') }}">
+      <span><svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-logo"></use></svg></span>
+      <span>CareerTwin</span>
+    </a>
+
+    <div class="auth__pitch">
+      <h2>Five minutes to a real career plan.</h2>
+      <p>Create an account and we will turn your background into a roadmap you can actually finish.</p>
+      <ul class="auth__points">
+        <li>
+          <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-check-circle"></use></svg>
+          <span>A roadmap generated from your target role</span>
+        </li>
+        <li>
+          <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-check-circle"></use></svg>
+          <span>Resume scoring and skill gap analysis</span>
+        </li>
+        <li>
+          <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-check-circle"></use></svg>
+          <span>Mentor matching with live chat</span>
+        </li>
+      </ul>
+    </div>
+
+    <p class="small" style="color: rgba(255,255,255,.5); margin:0;">
+      CareerTwin — Computer Networks course project.
+    </p>
+  </aside>
+
+  <section class="auth__form-side">
+    <div class="auth__form-wrap">
+      <a class="auth__back" href="{{ url_for('index') }}">
+        <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-arrow-left"></use></svg>
+        Back to home
+      </a>
+
+      <a class="auth__mobile-brand" href="{{ url_for('index') }}">
+        <span class="marketing-nav__logo">
+          <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-logo"></use></svg>
+        </span>
+        <span>CareerTwin</span>
+      </a>
+
+      <h1 class="auth__title">Create your account</h1>
+      <p class="auth__subtitle">It is free, and it takes less than five minutes.</p>
+
+      {% if error %}
+      <div class="alert alert--error form-error" role="alert">
+        <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-alert-circle"></use></svg>
+        <div class="alert__body">{{ error }}</div>
+      </div>
+      {% endif %}
+
+      <form class="auth__form" action="{{ url_for('auth.register') }}" method="POST" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="field">
+          <label class="field__label" for="f-name"><span>Full name</span></label>
+          <input type="text" id="f-name" name="name" placeholder="Ada Lovelace"
+                 autocomplete="name" required autofocus>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="f-email"><span>Email address</span></label>
+          <input type="email" id="f-email" name="email" placeholder="you@example.com"
+                 autocomplete="email" required>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="f-password"><span>Password</span></label>
+          <div class="field__password">
+            <input type="password" id="f-password" name="password" placeholder="At least 8 characters"
+                   autocomplete="new-password" required minlength="8">
+            <button class="field__password-btn" type="button" data-password-toggle="f-password"
+                    aria-pressed="false">
+              <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-eye"></use></svg>
+              <span data-toggle-label>Show</span>
+            </button>
+          </div>
+          <div class="strength" id="strengthMeter" hidden>
+            <div class="strength__track">
+              <span class="strength__seg"></span>
+              <span class="strength__seg"></span>
+              <span class="strength__seg"></span>
+              <span class="strength__seg"></span>
+            </div>
+            <p class="strength__label" id="strengthLabel">Password strength</p>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="f-confirm"><span>Confirm password</span></label>
+          <div class="field__password">
+            <input type="password" id="f-confirm" name="confirm_password"
+                   placeholder="Repeat your password" autocomplete="new-password" required minlength="8">
+            <button class="field__password-btn" type="button" data-password-toggle="f-confirm"
+                    aria-pressed="false">
+              <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-eye"></use></svg>
+              <span data-toggle-label>Show</span>
+            </button>
+          </div>
+          <p class="field__message" id="confirmMessage" hidden>Passwords do not match.</p>
+        </div>
+
+        <button class="btn btn--primary btn--lg btn--block" type="submit">Create account</button>
+      </form>
+
+      <p class="auth__footer">
+        Already have an account? <a href="{{ url_for('auth.login') }}">Log in</a>
+      </p>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (function () {
+    var password = document.getElementById("f-password");
+    var confirmField = document.getElementById("f-confirm");
+    var meter = document.getElementById("strengthMeter");
+    var label = document.getElementById("strengthLabel");
+    var confirmMessage = document.getElementById("confirmMessage");
+    var segs = meter ? Array.prototype.slice.call(meter.querySelectorAll(".strength__seg")) : [];
+
+    var LEVELS = [
+      { label: "Too short", color: "var(--danger)" },
+      { label: "Weak", color: "var(--danger)" },
+      { label: "Fair", color: "var(--warning)" },
+      { label: "Good", color: "var(--info)" },
+      { label: "Strong", color: "var(--success)" }
+    ];
+
+    function score(value) {
+      if (!value || value.length < 8) return 0;
+      var points = 1;
+      if (value.length >= 12) points++;
+      if (/[A-Z]/.test(value) && /[a-z]/.test(value)) points++;
+      if (/\d/.test(value)) points++;
+      if (/[^A-Za-z0-9]/.test(value)) points++;
+      return Math.min(points, 4);
+    }
+
+    if (password && meter) {
+      password.addEventListener("input", function () {
+        var value = password.value;
+        meter.hidden = !value;
+        if (!value) return;
+        var s = score(value);
+        var level = LEVELS[s];
+        segs.forEach(function (seg, i) {
+          seg.style.background = i < s ? level.color : "var(--border)";
+        });
+        label.textContent = level.label;
+        label.style.color = level.color;
+      });
+    }
+
+    if (confirmField && password) {
+      confirmField.addEventListener("input", function () {
+        confirmMessage.hidden = confirmField.value === password.value || !confirmField.value;
+      });
+    }
+  })();
+</script>
+{% endblock %}

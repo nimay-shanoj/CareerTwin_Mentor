@@ -1,0 +1,15 @@
+{% extends "base_public.html" %}
+
+{% block title %}{{ code }} – {{ title }}{% endblock %}
+
+{% block content %}
+<section class="error-page">
+  <p class="error-page__code">{{ code }}</p>
+  <h1 class="error-page__title">{{ title }}</h1>
+  <p class="error-page__message">{{ message }}</p>
+  <div class="error-page__actions">
+    <a class="btn btn--primary" href="{{ url_for('dashboard_page') }}">Back to dashboard</a>
+    <a class="btn btn--ghost" href="{{ url_for('index') }}">Go to home</a>
+  </div>
+</section>
+{% endblock %}

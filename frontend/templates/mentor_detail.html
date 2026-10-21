@@ -1,0 +1,219 @@
+{% extends "base_app.html" %}
+
+{% block title %}{{ mentor.user.name }} — Mentor{% endblock %}
+{% block description %}{{ mentor.headline or 'Mentor profile' }} on CareerTwin.{% endblock %}
+{% block page_css %}<link rel="stylesheet" href="/static/css/pages/mentors.css">{% endblock %}
+
+{% block content %}
+{% from "macros/ui.html" import icon %}
+
+<nav class="row" style="margin-bottom: var(--sp-5);">
+  <a class="btn btn--ghost btn--sm" href="{{ url_for('mentorship_bp.mentors_page') }}">
+    {{ icon("arrow-left") }}
+    <span>Back to directory</span>
+  </a>
+</nav>
+
+<section class="mentor-hero">
+  <span class="avatar avatar--xl" style="background: rgba(255,255,255,.14); color: #fff;">
+    {{ (mentor.user.name or '?')[:2]|upper }}
+  </span>
+
+  <div class="mentor-hero__body">
+    <h1>{{ mentor.user.name }}</h1>
+    <p class="mentor-hero__headline">{{ mentor.headline or 'Mentor' }}</p>
+
+    <div class="mentor-hero__facts">
+      {% if mentor.company %}
+      <span>
+        <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-server"></use></svg>
+        {{ mentor.company }}
+      </span>
+      {% endif %}
+      {% if mentor.years_experience %}
+      <span>
+        <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-award"></use></svg>
+        {{ mentor.years_experience }} years experience
+      </span>
+      {% endif %}
+      {% if mentor.timezone %}
+      <span>
+        <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-clock"></use></svg>
+        {{ mentor.timezone }}
+      </span>
+      {% endif %}
+      <span>
+        <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-users"></use></svg>
+        {{ mentor.active_mentee_count() }} / {{ mentor.max_mentees }} mentee slots used
+      </span>
+    </div>
+  </div>
+
+  <div style="text-align:center">
+    <div class="match match--lg" style="justify-content:center">
+      <span class="match__value">{{ match }}%</span>
+      <span class="match__bar">
+        <span class="match__fill" style="width: {{ match }}%"></span>
+      </span>
+    </div>
+    <div class="small" style="color: rgba(255,255,255,.7); margin-top: 4px;">match with your goal</div>
+
+    {% if existing_request %}
+      <span class="badge badge--accent" style="margin-top: var(--sp-3);">Request {{ existing_request.status }}</span>
+    {% else %}
+      <button class="btn btn--accent" type="button" data-modal-open="requestModal" style="margin-top: var(--sp-4);">
+        {{ icon("message-circle") }}
+        <span>Request mentorship</span>
+      </button>
+    {% endif %}
+  </div>
+</section>
+
+<div class="split split--main">
+  <div class="stack stack--lg">
+    <section class="card">
+      <header class="card__header">
+        <div><h2 class="card__title">About</h2></div>
+      </header>
+      <div class="card__body">
+        {% if mentor.bio %}
+        <p style="margin:0">{{ mentor.bio }}</p>
+        {% else %}
+        <p class="muted" style="margin:0">This mentor has not written a bio yet.</p>
+        {% endif %}
+      </div>
+    </section>
+
+    <section class="card">
+      <header class="card__header">
+        <div><h2 class="card__title">Expertise</h2></div>
+      </header>
+      <div class="card__body">
+        <ul class="chip-list">
+          {% for tag in mentor.expertise_list() %}
+          <li><span class="chip chip--has">{{ tag }}</span></li>
+          {% else %}
+          <li class="muted small">No expertise listed yet.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </section>
+
+    <section class="card">
+      <header class="card__header">
+        <div>
+          <h2 class="card__title">Why you match</h2>
+          <p class="card__subtitle">The score is a weighted overlap between your skills, your target role and this mentor's expertise.</p>
+        </div>
+      </header>
+      <div class="card__body">
+        <ul class="why-matched">
+          {% for reason in reasons %}
+          <li>
+            <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-check-circle"></use></svg>
+            <span>{{ reason.label }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </section>
+  </div>
+
+  <aside class="stack">
+    <section class="card">
+      <header class="card__header">
+        <div><h2 class="card__title">Availability</h2></div>
+      </header>
+      <div class="card__body">
+        {% if mentor.availability %}
+        <p style="margin:0">{{ mentor.availability }}</p>
+        {% else %}
+        <p class="muted" style="margin:0">Not specified — send a message to ask.</p>
+        {% endif %}
+      </div>
+    </section>
+  </aside>
+</div>
+
+<!-- ── Request modal ─────────────────────────────────────────────────── -->
+<div class="modal" id="requestModal" hidden>
+  <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="requestModalTitle">
+    <div class="modal__header">
+      <h3 id="requestModalTitle">Request mentorship</h3>
+      <button class="icon-btn" type="button" data-modal-close aria-label="Close">
+        <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-x"></use></svg>
+      </button>
+    </div>
+
+    <div class="modal__body">
+      <p class="muted small">
+        Tell {{ mentor.user.name }} what you are working on. Keep it specific — mentors
+        reply faster to a clear ask.
+      </p>
+
+      <div class="field" style="margin-bottom: var(--sp-3)">
+        <label class="field__label" for="requestMessage">
+          <span>Your message</span>
+          <span class="small subtle" id="charCount">0 / 500</span>
+        </label>
+        <textarea id="requestMessage" rows="5" maxlength="500"
+                  placeholder="Hi! I'm working on …"></textarea>
+      </div>
+
+      <div class="alert alert--error" id="requestError" hidden role="alert">
+        <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-alert-circle"></use></svg>
+        <div class="alert__body"></div>
+      </div>
+    </div>
+
+    <div class="modal__footer">
+      <button class="btn btn--ghost" type="button" data-modal-close>Cancel</button>
+      <button class="btn btn--primary" type="button" id="sendRequest">Send request</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (function () {
+    var message = document.getElementById("requestMessage");
+    var counter = document.getElementById("charCount");
+    var errorBox = document.getElementById("requestError");
+    var sendBtn = document.getElementById("sendRequest");
+
+    if (message) {
+      message.addEventListener("input", function () {
+        counter.textContent = message.value.length + " / 500";
+      });
+    }
+
+    if (sendBtn) {
+      sendBtn.addEventListener("click", function () {
+        errorBox.hidden = true;
+        sendBtn.classList.add("is-loading");
+
+        window.CT.fetchJSON("/api/mentorship/requests", {
+          method: "POST",
+          body: JSON.stringify({
+            mentor_id: {{ mentor.user_id }},
+            message: message.value
+          })
+        })
+          .then(function () {
+            if (window.CT) window.CT.toast("Request sent to " + {{ mentor.user.name|tojson }}.", "success");
+            window.CT.closeModal(document.getElementById("requestModal"));
+            window.setTimeout(function () { window.location.reload(); }, 700);
+          })
+          .catch(function (error) {
+            errorBox.hidden = false;
+            errorBox.querySelector(".alert__body").textContent = error.message;
+          })
+          .finally(function () {
+            sendBtn.classList.remove("is-loading");
+          });
+      });
+    }
+  })();
+</script>
+{% endblock %}

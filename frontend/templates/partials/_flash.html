@@ -1,0 +1,22 @@
+{# ==========================================================================
+   Flash messages / page-level banners
+   ========================================================================== #}
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="stack stack--sm" style="margin-bottom: var(--sp-5);">
+      {% for category, message in messages %}
+        {% set variant = 'error' if category in ['error', 'danger'] else ('success' if category == 'success' else 'info') %}
+        <div class="alert alert--{{ variant }}" role="{{ 'alert' if variant == 'error' else 'status' }}">
+          {% if variant == 'error' %}
+            <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-alert-circle"></use></svg>
+          {% elif variant == 'success' %}
+            <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-check-circle"></use></svg>
+          {% else %}
+            <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-info"></use></svg>
+          {% endif %}
+          <div class="alert__body">{{ message }}</div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}

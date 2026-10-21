@@ -1,0 +1,96 @@
+/* ==========================================================================
+   Resume analyzer
+   ========================================================================== */
+
+.dropzone {
+  display: grid;
+  place-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-10) var(--sp-5);
+  text-align: center;
+  border: 2px dashed var(--border-strong);
+  border-radius: var(--r-lg);
+  background: var(--bg-subtle);
+  cursor: pointer;
+  transition: border-color var(--dur-1) var(--ease), background var(--dur-1) var(--ease);
+}
+
+.dropzone:hover,
+.dropzone.is-over {
+  border-color: var(--brand-500);
+  background: var(--brand-050);
+}
+
+.dropzone__icon {
+  display: grid;
+  place-items: center;
+  width: 52px; height: 52px;
+  border-radius: var(--r-md);
+  background: var(--brand-100);
+  color: var(--brand-700);
+}
+
+.dropzone__icon svg { width: 24px; height: 24px; }
+
+.dropzone__title { font-weight: var(--fw-semibold); }
+.dropzone__hint { font-size: var(--fs-13); color: var(--text-subtle); margin: 0; }
+
+.dropzone__file {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-13);
+  font-weight: var(--fw-semibold);
+  color: var(--brand-700);
+}
+
+.resume-result {
+  display: grid;
+  gap: var(--sp-6);
+}
+
+@media (min-width: 900px) {
+  .resume-result { grid-template-columns: 220px 1fr; align-items: start; }
+}
+
+.resume-score {
+  display: grid;
+  place-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-6);
+  border-radius: var(--r-md);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  text-align: center;
+}
+
+.resume-score__meta { font-size: var(--fs-13); color: var(--text-subtle); }
+
+.chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.suggestion-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.suggestion-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: var(--sp-3);
+  border-radius: var(--r-sm);
+  background: var(--warning-soft);
+  color: var(--warning);
+  font-size: var(--fs-14);
+}
+
+.suggestion-list svg { width: 16px; height: 16px; flex: 0 0 auto; margin-top: 2px; }

@@ -1,0 +1,177 @@
+{% extends "base_app.html" %}
+
+{% block title %}Become a mentor — CareerTwin{% endblock %}
+{% block description %}Create your mentor profile so students can find and message you.{% endblock %}
+{% block page_css %}<link rel="stylesheet" href="/static/css/pages/mentors.css">{% endblock %}
+
+{% block content %}
+{% from "macros/ui.html" import icon %}
+
+<div style="margin-bottom: var(--sp-6); max-width: 720px;">
+  <h1 style="margin-bottom: var(--sp-1)">
+    {% if mentor_profile %}Edit your mentor profile{% else %}Become a mentor{% endif %}
+  </h1>
+  <p class="page__subtitle">
+    Your profile is what students see in the directory. Expertise is matched against
+    their skills and their target role.
+  </p>
+</div>
+
+<form id="mentorForm" style="max-width: 720px;">
+  <div class="stack stack--lg">
+
+    <section class="card">
+      <header class="card__header">
+        <div>
+          <h2 class="card__title">Who you are</h2>
+          <p class="card__subtitle">One line that shows up in the directory listing.</p>
+        </div>
+      </header>
+      <div class="card__body">
+        <div class="field">
+          <label class="field__label" for="headline"><span>Headline</span></label>
+          <input type="text" id="headline" maxlength="120" required
+                 placeholder="Backend engineer who loves teaching distributed systems"
+                 value="{{ mentor_profile.headline if mentor_profile else '' }}">
+          <p class="field__hint">Maximum 120 characters.</p>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="bio"><span>Bio</span></label>
+          <textarea id="bio" rows="5"
+                    placeholder="What do you work on, and what would you like to help with?">{{ mentor_profile.bio if mentor_profile else '' }}</textarea>
+        </div>
+
+        <div class="grid grid--2">
+          <div class="field">
+            <label class="field__label" for="company"><span>Company</span></label>
+            <input type="text" id="company" maxlength="100"
+                   placeholder="e.g. Acme Corp"
+                   value="{{ mentor_profile.company if mentor_profile else '' }}">
+          </div>
+          <div class="field">
+            <label class="field__label" for="years"><span>Years of experience</span></label>
+            <input type="number" id="years" min="0" max="60"
+                   value="{{ mentor_profile.years_experience if mentor_profile else 0 }}">
+          </div>
+        </div>
+
+        <div class="grid grid--2">
+          <div class="field">
+            <label class="field__label" for="timezone"><span>Timezone</span></label>
+            <input type="text" id="timezone" maxlength="50" placeholder="e.g. IST (UTC+5:30)"
+                   value="{{ mentor_profile.timezone if mentor_profile else '' }}">
+          </div>
+          <div class="field">
+            <label class="field__label" for="maxMentees"><span>Maximum mentees</span></label>
+            <input type="number" id="maxMentees" min="1" max="20"
+                   value="{{ mentor_profile.max_mentees if mentor_profile else 3 }}">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <header class="card__header">
+        <div>
+          <h2 class="card__title">Expertise</h2>
+          <p class="card__subtitle">Comma separated — these tags drive the match score.</p>
+        </div>
+      </header>
+      <div class="card__body">
+        <div class="field">
+          <label class="field__label" for="expertise"><span>Expertise</span></label>
+          <input type="text" id="expertise"
+                 placeholder="python, sql, flask, system design"
+                 value="{{ mentor_profile.expertise if mentor_profile else '' }}">
+          <p class="field__hint">
+            Use the same wording students write in their profile — matching is tag based.
+          </p>
+        </div>
+
+        <div class="field" style="margin-bottom:0">
+          <label class="field__label" for="availability"><span>Availability</span></label>
+          <textarea id="availability" rows="3"
+                    placeholder="e.g. Weekends, or weekday evenings after 7pm IST">{{ mentor_profile.availability if mentor_profile else '' }}</textarea>
+        </div>
+      </div>
+      <footer class="card__footer row row--end">
+        <a class="btn btn--ghost" href="{{ url_for('mentorship_bp.mentors_page') }}">Cancel</a>
+        <button class="btn btn--primary" type="submit" id="saveBtn">
+          {{ icon("check") }}
+          <span>Save profile</span>
+        </button>
+      </footer>
+    </section>
+
+    {% if mentor_profile and mentor_profile.is_active %}
+    <section class="card">
+      <div class="card__body row row--between">
+        <div>
+          <h2 class="card__title" style="font-size: var(--fs-16)">Deactivate your profile</h2>
+          <p class="small muted" style="margin:0">
+            You will no longer appear in the directory. Existing conversations are kept.
+          </p>
+        </div>
+        <button class="btn btn--danger-ghost" type="button" id="deactivateBtn">Deactivate</button>
+      </div>
+    </section>
+    {% endif %}
+  </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (function () {
+    var form = document.getElementById("mentorForm");
+    var saveBtn = document.getElementById("saveBtn");
+    var deactivateBtn = document.getElementById("deactivateBtn");
+
+    if (form) {
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        saveBtn.classList.add("is-loading");
+
+        window.CT.fetchJSON("/api/mentors/me", {
+          method: "POST",
+          body: JSON.stringify({
+            headline: document.getElementById("headline").value,
+            bio: document.getElementById("bio").value,
+            expertise: document.getElementById("expertise").value,
+            company: document.getElementById("company").value,
+            years_experience: document.getElementById("years").value,
+            timezone: document.getElementById("timezone").value,
+            availability: document.getElementById("availability").value,
+            max_mentees: document.getElementById("maxMentees").value,
+            is_active: true
+          })
+        })
+          .then(function () {
+            if (window.CT) window.CT.toast("Mentor profile saved.", "success");
+          })
+          .catch(function (error) {
+            if (window.CT) window.CT.toast(error.message || "Could not save your profile.", "error");
+          })
+          .finally(function () {
+            saveBtn.classList.remove("is-loading");
+          });
+      });
+    }
+
+    if (deactivateBtn) {
+      deactivateBtn.addEventListener("click", function () {
+        if (!window.confirm("Deactivate your mentor profile?")) return;
+        window.CT.fetchJSON("/api/mentors/me", { method: "DELETE" })
+          .then(function () {
+            if (window.CT) window.CT.toast("Profile deactivated.", "success");
+            window.setTimeout(function () { window.location.reload(); }, 600);
+          })
+          .catch(function (error) {
+            if (window.CT) window.CT.toast(error.message || "Could not deactivate.", "error");
+          });
+      });
+    }
+  })();
+</script>
+{% endblock %}

@@ -1,0 +1,88 @@
+/* ==========================================================================
+   Progress tracker
+   ========================================================================== */
+
+.progress-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-6);
+  padding: var(--sp-6);
+  margin-bottom: var(--sp-6);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+}
+
+.progress-summary__body { flex: 1; min-width: 220px; }
+.progress-summary__body h2 { margin-bottom: 4px; font-size: var(--fs-20); }
+.progress-summary__body p { margin: 0 0 var(--sp-4); font-size: var(--fs-14); }
+
+.task-list {
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.task-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  cursor: pointer;
+  transition: border-color var(--dur-1) var(--ease), background var(--dur-1) var(--ease);
+}
+
+.task-item:hover { border-color: var(--border-strong); }
+
+.task-item.is-done {
+  background: var(--success-soft);
+  border-color: color-mix(in srgb, var(--success) 22%, transparent);
+}
+
+.task-item__check {
+  flex: 0 0 auto;
+  width: 20px; height: 20px;
+  margin-top: 2px;
+  accent-color: var(--success);
+  cursor: pointer;
+}
+
+.task-item__body { flex: 1; min-width: 0; }
+
+.task-item__name {
+  display: block;
+  font-weight: var(--fw-semibold);
+  font-size: var(--fs-14);
+}
+
+.task-item.is-done .task-item__name {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.task-item__desc {
+  display: block;
+  font-size: var(--fs-13);
+  color: var(--text-subtle);
+}
+
+.task-item__goal {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 2px 8px;
+  border-radius: var(--r-full);
+  background: var(--surface-sunken);
+  color: var(--text-subtle);
+  font-size: var(--fs-12);
+  font-weight: var(--fw-medium);
+}
+
+.task-item.is-done .task-item__goal { background: rgba(29, 122, 76, 0.12); color: var(--success); }
+
+@media (min-width: 768px) {
+  .task-item { align-items: center; }
+  .task-item__goal { margin-top: 0; }
+}

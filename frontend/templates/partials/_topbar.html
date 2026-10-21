@@ -1,0 +1,81 @@
+{# ==========================================================================
+   Authenticated topbar
+   ========================================================================== #}
+{% set unread = g.nav_notifications.unread_messages if g.nav_notifications else 0 %}
+{% set pending = g.nav_notifications.pending_requests if g.nav_notifications else 0 %}
+{% set total_alerts = (unread or 0) + (pending or 0) %}
+
+<header class="topbar">
+  <button class="icon-btn" type="button" data-sidebar-toggle aria-expanded="false" aria-label="Open navigation menu">
+    <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-menu"></use></svg>
+  </button>
+
+  <h1 class="topbar__title">{% block page_title %}{{ page_title|default('Dashboard') }}{% endblock %}</h1>
+
+  <div class="topbar__spacer"></div>
+
+  <button class="icon-btn" type="button" data-theme-toggle aria-pressed="false" aria-label="Toggle dark mode">
+    <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-moon"></use></svg>
+  </button>
+
+  <a class="icon-btn" href="{{ url_for('mentorship_bp.mentorship_page') }}" aria-label="Notifications{% if total_alerts %}: {{ total_alerts }} new{% endif %}">
+    <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-bell"></use></svg>
+    {% if total_alerts %}
+    <span class="icon-btn__dot">{{ total_alerts if total_alerts < 100 else '99+' }}</span>
+    {% endif %}
+  </a>
+
+  <div class="user-menu">
+    <button class="user-menu__trigger" type="button" data-user-menu-toggle aria-expanded="false" aria-haspopup="menu">
+      <span class="avatar avatar--sm" aria-hidden="true">{{ (current_user.name or '?')[:2]|upper }}</span>
+      <span class="user-menu__name">{{ current_user.name }}</span>
+      <svg width="14" height="14" aria-hidden="true"><use href="/static/icons/sprite.svg#icon-chevron-down"></use></svg>
+    </button>
+
+    <div class="user-menu__panel" data-user-menu hidden role="menu">
+      <div class="user-menu__header">
+        <strong>{{ current_user.name }}</strong>
+        <span>{{ current_user.email }}</span>
+      </div>
+      <a class="user-menu__item" role="menuitem" href="{{ url_for('profile_bp.profile') }}">
+        <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-user"></use></svg>
+        Profile
+      </a>
+      <a class="user-menu__item" role="menuitem" href="{{ url_for('mentorship_bp.mentorship_page') }}">
+        <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-bell"></use></svg>
+        Mentorship requests
+      </a>
+      <a class="user-menu__item user-menu__item--danger" role="menuitem" href="{{ url_for('auth.logout') }}">
+        <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-log-out"></use></svg>
+        Log out
+      </a>
+    </div>
+  </div>
+</header>
+
+<script>
+  (function () {
+    var trigger = document.querySelector("[data-user-menu-toggle]");
+    var panel = document.querySelector("[data-user-menu]");
+    if (!trigger || !panel) return;
+    trigger.addEventListener("click", function (e) {
+      e.stopPropagation();
+      var open = panel.hidden;
+      panel.hidden = !open;
+      trigger.setAttribute("aria-expanded", String(open));
+    });
+    document.addEventListener("click", function (e) {
+      if (!panel.hidden && !panel.contains(e.target)) {
+        panel.hidden = true;
+        trigger.setAttribute("aria-expanded", "false");
+      }
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && !panel.hidden) {
+        panel.hidden = true;
+        trigger.setAttribute("aria-expanded", "false");
+        trigger.focus();
+      }
+    });
+  })();
+</script>

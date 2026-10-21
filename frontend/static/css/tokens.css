@@ -1,0 +1,183 @@
+/* ==========================================================================
+   tokens.css — THE single source of design tokens.
+   Every other stylesheet consumes these variables. Never redefine :root
+   anywhere else in the project.
+   ========================================================================== */
+
+:root {
+  /* --- Brand --------------------------------------------------------- */
+  --brand-900: #0d3b2e;
+  --brand-800: #124a39;
+  --brand-700: #1a5c44;
+  --brand-600: #24775a;
+  --brand-500: #2f9e74;
+  --brand-400: #4fb894;
+  --brand-300: #8ed4ba;
+  --brand-200: #c2e7da;
+  --brand-100: #e3f4ec;
+  --brand-050: #f1faf6;
+
+  --accent: #9cff57;
+  --accent-strong: #7de62f;
+  --accent-soft: #eaffd4;
+
+  /* --- Neutrals ------------------------------------------------------ */
+  --bg: #f7faf5;
+  --bg-subtle: #fbfdf9;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-sunken: #f2f6f0;
+  --border: #e8ece4;
+  --border-strong: #d3dbd0;
+  --text: #111a0e;
+  --text-muted: #4a5244;
+  --text-subtle: #6b7466;
+  --text-inverse: #ffffff;
+
+  /* --- Semantic (solid + soft pair) ---------------------------------- */
+  --success: #1d7a4c;
+  --success-soft: #e4f5ec;
+  --warning: #a06a09;
+  --warning-soft: #fdf2dc;
+  --danger: #c2372c;
+  --danger-soft: #fdeceb;
+  --info: #1f6fa8;
+  --info-soft: #e6f1f9;
+
+  /* --- Typography ---------------------------------------------------- */
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Poppins", var(--font-sans);
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas,
+    "Liberation Mono", monospace;
+
+  --fs-12: 0.75rem;
+  --fs-13: 0.8125rem;
+  --fs-14: 0.875rem;
+  --fs-16: 1rem;
+  --fs-18: 1.125rem;
+  --fs-20: 1.25rem;
+  --fs-24: 1.5rem;
+  --fs-30: 1.875rem;
+  --fs-36: 2.25rem;
+  --fs-48: 3rem;
+
+  --lh-tight: 1.2;
+  --lh-normal: 1.55;
+  --lh-relaxed: 1.75;
+
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-extrabold: 800;
+
+  --tracking-wide: 0.04em;
+  --tracking-wider: 0.08em;
+
+  /* --- Spacing (4px scale) -------------------------------------------- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-7: 28px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+  --sp-20: 80px;
+  --sp-24: 96px;
+
+  /* --- Radii ---------------------------------------------------------- */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 18px;
+  --r-xl: 28px;
+  --r-full: 999px;
+
+  /* --- Shadows -------------------------------------------------------- */
+  --sh-1: 0 1px 2px rgba(13, 59, 46, 0.06), 0 1px 3px rgba(13, 59, 46, 0.04);
+  --sh-2: 0 2px 6px rgba(13, 59, 46, 0.07), 0 6px 16px rgba(13, 59, 46, 0.05);
+  --sh-3: 0 8px 24px rgba(13, 59, 46, 0.1), 0 2px 8px rgba(13, 59, 46, 0.05);
+  --ring: 0 0 0 3px rgba(47, 158, 116, 0.32);
+
+  /* --- Motion --------------------------------------------------------- */
+  --dur-1: 150ms;
+  --dur-2: 250ms;
+  --dur-3: 400ms;
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* --- Layout --------------------------------------------------------- */
+  --sidebar-w: 264px;
+  --sidebar-w-collapsed: 76px;
+  --topbar-h: 64px;
+  --content-max: 1240px;
+  --marketing-max: 1180px;
+
+  /* --- Z-index -------------------------------------------------------- */
+  --z-base: 1;
+  --z-sticky: 100;
+  --z-sidebar: 200;
+  --z-topbar: 210;
+  --z-drawer: 300;
+  --z-modal: 400;
+  --z-toast: 500;
+}
+
+/* ==========================================================================
+   Dark theme
+   Applied via [data-theme="dark"] on <html>. app.js also writes the attribute
+   early (inline head script) so there is no flash of the wrong theme.
+   ========================================================================== */
+[data-theme="dark"] {
+  --brand-900: #071f17;
+  --brand-800: #0a2b20;
+  --brand-700: #103a2b;
+  --brand-600: #17513b;
+  --brand-500: #2f9e74;
+  --brand-400: #45b78d;
+  --brand-300: #6fcaA8;
+  --brand-200: #2a5c49;
+  --brand-100: #163a2d;
+  --brand-050: #10261e;
+
+  --accent: #9cff57;
+  --accent-strong: #b3ff7d;
+  --accent-soft: #1d3a1b;
+
+  --bg: #0b1410;
+  --bg-subtle: #0e1814;
+  --surface: #12211b;
+  --surface-raised: #172a22;
+  --surface-sunken: #0e1a15;
+  --border: #1e3329;
+  --border-strong: #2b4739;
+  --text: #e9f2ec;
+  --text-muted: #a8bcae;
+  --text-subtle: #8a9e90;
+  --text-inverse: #0b1410;
+
+  --success: #4ade80;
+  --success-soft: #10331f;
+  --warning: #fbbf24;
+  --warning-soft: #3a2c07;
+  --danger: #f87171;
+  --danger-soft: #3d1614;
+  --info: #60a5fa;
+  --info-soft: #10263f;
+
+  --sh-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --sh-2: 0 2px 6px rgba(0, 0, 0, 0.45), 0 6px 16px rgba(0, 0, 0, 0.3);
+  --sh-3: 0 8px 24px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.35);
+  --ring: 0 0 0 3px rgba(156, 255, 87, 0.28);
+}
+
+/* Respect the OS preference before app.js runs (no explicit choice stored). */
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme="light"]):not([data-theme="dark"]) {
+    color-scheme: dark;
+  }
+}

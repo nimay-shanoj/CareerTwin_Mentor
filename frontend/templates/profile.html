@@ -1,0 +1,225 @@
+{% extends "base_app.html" %}
+
+{% block title %}Profile — CareerTwin{% endblock %}
+{% block description %}Set up your CareerTwin profile: personal details, education, skills and your career goal.{% endblock %}
+{% block page_css %}<link rel="stylesheet" href="/static/css/pages/dashboard.css">{% endblock %}
+
+{% set profile = current_user.profile %}
+{% set skills_value = (profile.skills if profile and profile.skills else '') %}
+{% set filled = [] %}
+{% if profile %}
+  {% if profile.phone %}{% set _ = filled.append('phone') %}{% endif %}
+  {% if profile.college_name %}{% set _ = filled.append('college') %}{% endif %}
+  {% if profile.degree %}{% set _ = filled.append('degree') %}{% endif %}
+  {% if profile.skills %}{% set _ = filled.append('skills') %}{% endif %}
+  {% if profile.career_goal %}{% set _ = filled.append('goal') %}{% endif %}
+{% endif %}
+{% set completion = (filled | length * 100 // 5) if profile else 0 %}
+
+{% block content %}
+{% from "macros/ui.html" import icon, progress_bar, select %}
+
+<div class="row row--between" style="margin-bottom: var(--sp-6); align-items: flex-start;">
+  <div>
+    <h1 style="margin-bottom: var(--sp-1)">Your profile</h1>
+    <p class="page__subtitle">Everything here drives your roadmap, skill gap and mentor matches.</p>
+  </div>
+  <div class="row" style="gap: var(--sp-3);">
+    <span class="badge badge--brand">{{ completion }}% complete</span>
+  </div>
+</div>
+
+{% if error_msg %}
+<div class="alert alert--error" role="alert" style="margin-bottom: var(--sp-5);">
+  {{ icon("alert-circle") }}
+  <div class="alert__body">{{ error_msg }}</div>
+</div>
+{% endif %}
+
+<form method="POST" action="{{ url_for('profile_bp.profile') }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  <div class="stack stack--lg" style="max-width: 760px;">
+
+    <!-- ── Personal ──────────────────────────────────────────────── -->
+    <section class="card">
+      <header class="card__header">
+        <div>
+          <h2 class="card__title">Personal</h2>
+          <p class="card__subtitle">How we address you and how we can reach you.</p>
+        </div>
+      </header>
+      <div class="card__body">
+        <div class="grid grid--2">
+          <div class="field">
+            <label class="field__label" for="f-name"><span>Full name</span></label>
+            <input type="text" id="f-name" name="name" value="{{ current_user.name }}"
+                   placeholder="Your full name" required>
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="f-email"><span>Email address</span></label>
+            <input type="email" id="f-email" name="email" value="{{ current_user.email }}" readonly>
+            <p class="field__hint">Your sign-in address cannot be changed here.</p>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="f-phone"><span>Phone number</span></label>
+          <input type="text" id="f-phone" name="phone" inputmode="tel"
+                 value="{{ profile.phone if profile and profile.phone else '' }}"
+                 placeholder="+91 98765 43210" required>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Education ─────────────────────────────────────────────── -->
+    <section class="card">
+      <header class="card__header">
+        <div>
+          <h2 class="card__title">Education</h2>
+          <p class="card__subtitle">Where you studied and what you studied.</p>
+        </div>
+      </header>
+      <div class="card__body">
+        <div class="field">
+          <label class="field__label" for="f-college"><span>College or school</span></label>
+          <input type="text" id="f-college" name="college_name"
+                 value="{{ profile.college_name if profile and profile.college_name else '' }}"
+                 placeholder="e.g. Mumbai University" required>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="f-degree"><span>Degree</span></label>
+          <input type="text" id="f-degree" name="degree"
+                 value="{{ profile.degree if profile and profile.degree else '' }}"
+                 placeholder="e.g. B.Sc. Computer Science" required>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Career ─────────────────────────────────────────────────── -->
+    <section class="card">
+      <header class="card__header">
+        <div>
+          <h2 class="card__title">Career</h2>
+          <p class="card__subtitle">Your skills and the role you are aiming at.</p>
+        </div>
+      </header>
+      <div class="card__body">
+        <div class="field">
+          <label class="field__label" for="f-skills"><span>Skills</span></label>
+          <div class="chip-input" id="skillsInput">
+            <input type="hidden" name="skills" id="f-skills" value="{{ skills_value }}">
+            <input type="text" id="skillsText" placeholder="Type a skill and press Enter" autocomplete="off"
+                   aria-label="Add a skill">
+          </div>
+          <p class="field__hint">
+            Press Enter or comma to add a skill. These are matched against mentor expertise.
+          </p>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="f-goal"><span>Career goal</span></label>
+          <select id="f-goal" name="career_goal" required>
+            <option value="">Select a goal</option>
+            {% for name in career_names %}
+            <option value="{{ name }}" {% if profile and profile.career_goal == name %}selected{% endif %}>{{ name }}</option>
+            {% endfor %}
+          </select>
+          <p class="field__hint">Your roadmap, skill gap and quiz results all follow this choice.</p>
+        </div>
+      </div>
+      <footer class="card__footer row row--end">
+        <a class="btn btn--ghost" href="{{ url_for('dashboard_page') }}">Cancel</a>
+        <button class="btn btn--primary" type="submit">
+          Save profile
+          {{ icon("check") }}
+        </button>
+      </footer>
+    </section>
+  </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Skills chip input. The canonical value stays in the hidden `skills` field as
+  // a comma-separated string – exactly the format the server expects.
+  (function () {
+    var container = document.getElementById("skillsInput");
+    if (!container) return;
+    var hidden = document.getElementById("f-skills");
+    var text = document.getElementById("skillsText");
+
+    function currentSkills() {
+      return hidden.value
+        .split(",")
+        .map(function (s) { return s.trim(); })
+        .filter(function (s) { return s.length; });
+    }
+
+    function sync() {
+      hidden.value = currentSkills().join(", ");
+    }
+
+    function addChip(value) {
+      var skill = value.trim();
+      if (!skill) return;
+      var skills = currentSkills();
+      var exists = skills.some(function (s) {
+        return s.toLowerCase() === skill.toLowerCase();
+      });
+      if (exists) { text.value = ""; return; }
+      skills.push(skill);
+
+      var chip = document.createElement("span");
+      chip.className = "chip";
+      chip.textContent = skill;
+
+      var remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "chip__remove";
+      remove.setAttribute("aria-label", "Remove " + skill);
+      remove.innerHTML =
+        '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+        'stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
+      remove.addEventListener("click", function () {
+        chip.remove();
+        sync();
+        text.focus();
+      });
+
+      chip.appendChild(remove);
+      container.insertBefore(chip, text);
+      hidden.value = skills.join(", ");
+      text.value = "";
+    }
+
+    currentSkills().forEach(addChip);
+    sync();
+
+    text.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === ",") {
+        e.preventDefault();
+        addChip(text.value);
+      } else if (e.key === "Backspace" && !text.value) {
+        var chips = container.querySelectorAll(".chip");
+        if (chips.length) {
+          var last = chips[chips.length - 1];
+          last.remove();
+          sync();
+        }
+      }
+    });
+
+    text.addEventListener("blur", function () {
+      if (text.value.trim()) addChip(text.value);
+    });
+
+    container.addEventListener("click", function (e) {
+      if (e.target === container) text.focus();
+    });
+  })();
+</script>
+{% endblock %}

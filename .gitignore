@@ -42,3 +42,8 @@ Thumbs.db
 
 # Flask
 instance/
+
+# Runtime logs
+*.log
+server.err
+server.out

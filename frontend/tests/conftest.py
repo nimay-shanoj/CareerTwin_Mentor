@@ -141,17 +141,18 @@ def mentor(user_factory, app):
 
     test_client, user = user_factory("mentor@example.test", "Mentor One")
     with app.app_context():
-        db.session.add(
-            MentorProfile(
-                user_id=user["id"],
-                headline="Backend engineer",
-                bio="I teach web development.",
-                expertise="python, sql, flask",
-                years_experience=6,
-                company="Acme",
-                max_mentees=3,
-            )
-        )
+        profile = MentorProfile.query.filter_by(user_id=user["id"]).first()
+        if profile is None:
+            profile = MentorProfile(user_id=user["id"])
+            db.session.add(profile)
+        profile.headline = "Backend engineer"
+        profile.bio = "I teach web development."
+        profile.expertise = "python, sql, flask"
+        profile.years_experience = 6
+        profile.company = "Acme"
+        profile.max_mentees = 3
+        profile.is_active = True
+        profile.is_draft = False
         db.session.commit()
     return test_client, user
 

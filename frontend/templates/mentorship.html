@@ -12,10 +12,20 @@
     <h1 class="mb-1">Mentorship</h1>
     <p class="page__subtitle">Requests, active mentorships and the conversations they unlock.</p>
   </div>
-  <a class="btn btn--secondary btn--sm" href="{{ url_for('mentorship_bp.mentors_page') }}">
-    {{ icon("search") }}
-    <span>Find a mentor</span>
-  </a>
+  <div class="row">
+    {% if my_mentor_profile %}
+      <a class="btn btn--ghost btn--sm" href="{{ url_for('mentorship_bp.become_mentor_page') }}">Edit my profile</a>
+    {% else %}
+      <a class="btn btn--secondary btn--sm" href="{{ url_for('mentorship_bp.become_mentor_page', welcome='1') }}">
+        {{ icon("user") }}
+        <span>Become a mentor</span>
+      </a>
+    {% endif %}
+    <a class="btn btn--secondary btn--sm" href="{{ url_for('mentorship_bp.mentors_page') }}">
+      {{ icon("search") }}
+      <span>Find a mentor</span>
+    </a>
+  </div>
 </div>
 
 <div class="tabs mb-5 max-420" >

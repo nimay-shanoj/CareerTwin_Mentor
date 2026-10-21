@@ -26,6 +26,8 @@ PUBLIC_PAGES = [
     "/landing.html",
     "/login",
     "/login.html",
+    "/mentor/login",
+    "/mentor/login.html",
     "/register",
     "/register.html",
     "/healthz",
@@ -263,6 +265,65 @@ def main():
         "POST a request to yourself -> 400",
         response.status_code == 400 and response.get_json()["code"] == "SELF_REQUEST",
         response.status_code,
+    )
+
+    print("\n== the mentor sign-in ==")
+    # A student account that signs up as a mentor but has no profile yet.
+    mentor_client = app.test_client()
+    mentor_token = CSRF_RE.search(
+        mentor_client.get("/register").get_data(as_text=True)
+    ).group(1)
+    mentor_client.post(
+        "/register",
+        data={
+            "csrf_token": mentor_token,
+            "name": "Smoke Mentor",
+            "email": "smokementor@example.test",
+            "password": "password123",
+            "confirm_password": "password123",
+            "role": "mentor",
+        },
+    )
+    mentor_client.get("/logout")
+
+    response = mentor_client.post(
+        "/mentor/login",
+        data={
+            "csrf_token": CSRF_RE.search(
+                mentor_client.get("/mentor/login").get_data(as_text=True)
+            ).group(1),
+            "email": "smokementor@example.test",
+            "password": "password123",
+        },
+    )
+    check("POST /mentor/login -> 302", response.status_code == 302, response.status_code)
+    check(
+        "an account without a mentor profile is sent to the onboarding",
+        "/mentors/become" in response.headers.get("Location", ""),
+        response.headers.get("Location"),
+    )
+
+    # Give the account a profile and sign in again: it now belongs in the
+    # request inbox.
+    mentor_client.post(
+        "/api/mentors/me",
+        json={"headline": "Smoke mentor", "expertise": "python, sql"},
+    )
+    mentor_client.get("/logout")
+    response = mentor_client.post(
+        "/mentor/login",
+        data={
+            "csrf_token": CSRF_RE.search(
+                mentor_client.get("/mentor/login").get_data(as_text=True)
+            ).group(1),
+            "email": "smokementor@example.test",
+            "password": "password123",
+        },
+    )
+    check(
+        "a mentor lands in the request inbox",
+        response.headers.get("Location", "").endswith("/mentorship.html"),
+        response.headers.get("Location"),
     )
 
     print("\n== the design system ==")

@@ -75,16 +75,23 @@ python -c "import socket;s=socket.create_connection(('127.0.0.1',9000),2);print(
 
 ### 1.4 The demo (10 minutes)
 
-1. Open <http://127.0.0.1:5000> — the landing page.
-2. Register a student account, then complete the profile (skills and a
-   career goal).
-3. Go to **Mentors** → open a mentor → **Request mentorship**.
-4. Open a second browser (or a private window) and sign in as
-   `mentor1@example.test` with the seed password.
-5. In the mentor account go to **Mentorship → Incoming** and **Accept**.
-6. Both sides now have a conversation. Send a message and watch the ticks
-   change from *sending* to *sent* to *delivered* to *read*.
-7. Open a terminal and connect the raw TCP client as the student:
+The two sides sign in separately — that is the point of the demo.
+
+1. Open <http://127.0.0.1:5000/register>. Pick **"A student"**, register,
+   then complete the profile (skills and a career goal).
+2. Open a **second browser** (or a private window) so the two accounts do not
+   share a session. Go to <http://127.0.0.1:5000/register>, pick
+   **"A mentor"** and register. You land on the mentor onboarding with a
+   welcome banner — fill in your headline and expertise and save it. You are
+   now published in the directory.
+3. Back in the **student** browser: go to **Mentors**, open the mentor and
+   send a **Request mentorship** (write a real message — the counter shows
+   the limit).
+4. In the **mentor** browser: **Mentorship → Incoming → Accept**. A
+   conversation is created for both of you.
+5. Send a message from either side and watch the ticks change from *sending*
+   to *sent* to *delivered* to *read*.
+6. Open a terminal and connect the raw TCP client as the **student**:
 
    ```bash
    python -m network.cli_client --host 127.0.0.1 --port 9000 \
@@ -99,16 +106,20 @@ python -c "import socket;s=socket.create_connection(('127.0.0.1',9000),2);print(
    hello from the command line
    ```
 
-   The message appears in the browser instantly, and anything the mentor
-   types in the browser appears in the terminal.
-8. Open **Network lab** in the browser: live RTT, a sparkline, a frame
+   The message appears in the mentor's browser instantly, and anything the
+   mentor types in the browser appears in the terminal.
+7. Open **Network lab** in the browser: live RTT, a sparkline, a frame
    level event log, and the simulation controls. Drag the *added latency*
    slider to 500 ms and the *packet drop* slider to 20 %, then send a
    message — the retry button appears on the failed bubble, and retrying
    does **not** create a duplicate.
-9. Turn off your Wi-Fi for 20 seconds and turn it back on. The banner goes
+8. Turn off your Wi-Fi for 20 seconds and turn it back on. The banner goes
    from *Connected* to *Reconnecting in 3s…* and back. Nothing is lost and
    nothing is duplicated, because the client resumes with `sync:request`.
+
+**Signing back in.** A student lands on the dashboard, a mentor lands in the
+request inbox — from either `/login` or `/mentor/login`. The mentor sign-in
+page is at <http://127.0.0.1:5000/mentor/login>.
 
 ### 1.5 The load test
 

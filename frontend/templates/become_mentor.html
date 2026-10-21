@@ -9,13 +9,25 @@
 
 <div class="mb-6 max-720">
   <h1 class="mb-1">
-    {% if mentor_profile %}Edit your mentor profile{% else %}Become a mentor{% endif %}
+    {% if mentor_profile %}Edit your mentor profile{% else %}Set up your mentor profile{% endif %}
   </h1>
   <p class="page__subtitle">
     Your profile is what students see in the directory. Expertise is matched against
     their skills and their target role.
   </p>
 </div>
+
+{% if is_draft or (request.args.get('welcome') and not mentor_profile) %}
+<div class="alert alert--success max-720" role="status" style="margin-bottom: var(--sp-5);">
+  {{ icon("check-circle") }}
+  <div class="alert__body">
+    <strong class="alert__title">Welcome aboard.</strong>
+    Fill in your expertise below and you will start appearing in the mentor
+    directory. Students can then send you a request, and you can chat with them
+    live once you accept.
+  </div>
+</div>
+{% endif %}
 
 <form id="mentorForm" class="max-720">
   <div class="stack stack--lg">

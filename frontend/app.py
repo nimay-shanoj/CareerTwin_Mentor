@@ -51,6 +51,7 @@ PAGE_TITLES = {
     "mentorship_bp.mentor_detail_page": "Mentor profile",
     "mentorship_bp.become_mentor_page": "Become a mentor",
     "mentorship_bp.mentorship_page": "Mentorship",
+    "auth.mentor_login": "Mentor sign in",
     "chat_bp.messages_page": "Messages",
     "chat_bp.conversation_page": "Messages",
     "chat_bp.network_page": "Network lab",
@@ -253,7 +254,13 @@ def create_app(config_class=Config):
     @app.route("/dashboard.html")
     @login_required
     def dashboard_page():
-        return render_template("dashboard.html", overview=compute_overview(current_user))
+        from mentorship_models import is_mentor
+
+        return render_template(
+            "dashboard.html",
+            overview=compute_overview(current_user),
+            is_mentor=is_mentor(current_user),
+        )
 
     @app.route("/resume")
     @app.route("/resume.html")

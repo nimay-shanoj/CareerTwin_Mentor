@@ -820,6 +820,75 @@ body.modal-open { overflow: hidden; }
 }
 
 /* --------------------------------------------------------------------------
+   Segmented control (radio group styled as a switch)
+   -------------------------------------------------------------------------- */
+.segmented {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: var(--sp-1);
+  padding: 4px;
+  background: var(--surface-sunken);
+  border-radius: var(--r-sm);
+}
+
+.segmented__option {
+  position: relative;
+  display: block;
+}
+
+.segmented__option input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+.segmented__option label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: var(--sp-3);
+  border-radius: 6px;
+  text-align: center;
+  font-size: var(--fs-14);
+  font-weight: var(--fw-semibold);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease),
+    box-shadow var(--dur-1) var(--ease);
+}
+
+.segmented__option label:hover { color: var(--text); }
+
+.segmented__option input:checked + label {
+  background: var(--surface);
+  color: var(--brand-700);
+  box-shadow: var(--sh-1);
+}
+
+[data-theme="dark"] .segmented__option input:checked + label { color: var(--accent); }
+
+.segmented__option input:focus-visible + label {
+  outline: 2px solid var(--brand-500);
+  outline-offset: 2px;
+}
+
+.segmented__option svg {
+  width: 16px;
+  height: 16px;
+}
+
+.segmented__hint {
+  margin: var(--sp-2) 0 0;
+  font-size: var(--fs-13);
+  color: var(--text-subtle);
+}
+
+/* --------------------------------------------------------------------------
    Utilities
    A thin layer over the spacing scale. These exist so the templates do not
    need one-off inline styles.

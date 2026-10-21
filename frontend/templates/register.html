@@ -66,6 +66,32 @@
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
         <div class="field">
+          <span class="field__label" id="roleLabel"><span>I am joining as</span></span>
+          <div class="segmented" role="radiogroup" aria-labelledby="roleLabel">
+            <span class="segmented__option">
+              <input type="radio" id="role-student" name="role" value="student"
+                     {% if role != 'mentor' %}checked{% endif %}>
+              <label for="role-student">
+                <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-graduation-cap"></use></svg>
+                <span>A student</span>
+              </label>
+            </span>
+            <span class="segmented__option">
+              <input type="radio" id="role-mentor" name="role" value="mentor"
+                     {% if role == 'mentor' %}checked{% endif %}>
+              <label for="role-mentor">
+                <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-users"></use></svg>
+                <span>A mentor</span>
+              </label>
+            </span>
+          </div>
+          <p class="segmented__hint" id="roleHint">
+            Students build a career plan and get matched with a mentor. Mentors
+            share their expertise and get paid in experience, not money.
+          </p>
+        </div>
+
+        <div class="field">
           <label class="field__label" for="f-name"><span>Full name</span></label>
           <input type="text" id="f-name" name="name" placeholder="Ada Lovelace"
                  autocomplete="name" required autofocus>
@@ -119,6 +145,9 @@
       <p class="auth__footer">
         Already have an account? <a href="{{ url_for('auth.login') }}">Log in</a>
       </p>
+      <p class="auth__footer small">
+        Are you a mentor? <a href="{{ url_for('auth.mentor_login') }}">Sign in to the mentor side</a>
+      </p>
     </div>
   </section>
 </div>
@@ -127,6 +156,21 @@
 {% block scripts %}
 <script>
   (function () {
+    // The role picker changes what happens after sign-up.
+    var hint = document.getElementById("roleHint");
+    var HINTS = {
+      student: "Students build a career plan and get matched with a mentor. " +
+               "Mentors share their expertise and get paid in experience, not money.",
+      mentor: "Mentors get a profile, appear in the directory and receive " +
+              "requests from students. You can still use the career modules yourself."
+    };
+
+    document.querySelectorAll('input[name="role"]').forEach(function (input) {
+      input.addEventListener("change", function () {
+        if (hint) hint.textContent = HINTS[input.value] || "";
+      });
+    });
+
     var password = document.getElementById("f-password");
     var confirmField = document.getElementById("f-confirm");
     var meter = document.getElementById("strengthMeter");

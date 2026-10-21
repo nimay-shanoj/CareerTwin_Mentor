@@ -31,12 +31,25 @@ sequence numbers — plus a Network Inspector that shows all of it live.
 
 ### Mentorship
 
+There is **one account system with two roles**, and two entry points:
+
+| | Entry point | Lands on |
+|---|---|---|
+| **Student** | `/register` → "A student", or `/login` | the dashboard |
+| **Mentor** | `/register` → "A mentor", or `/mentor/login` | the request inbox |
+
+A mentor is simply an account that also has a published mentor profile — the
+role is **derived**, never stored on the `users` table, so the roles are not
+exclusive (a mentor can also ask a mentor for help) and no existing table
+changes.
+
 * Become a mentor with an expertise profile, or browse the directory.
 * **Explainable matching** — a weighted overlap of your skills, your target
   role and the mentor's expertise, with the reasons shown.
 * Request → accept / decline / cancel / end, with the capacity rules
   enforced on the server.
-* A conversation is created when a request is accepted.
+* A conversation is created when a request is accepted — and **both** sides
+  can then chat live, in their own browser or with the CLI client.
 
 ### Chat and networking
 
@@ -177,9 +190,29 @@ Anything else is sent as a message to the open conversation.
 python -m pytest
 ```
 
-103 tests covering the frame codec, authentication and CSRF, the mentorship
-rules, the chat service, token single-use and expiry, and cross-transport
-delivery between a raw TCP client and a Socket.IO client.
+124 tests covering the frame codec, authentication and CSRF, the student /
+mentor split, the mentorship rules, the chat service, token single-use and
+expiry, and cross-transport delivery between a raw TCP client and a
+Socket.IO client.
+
+### Walk the whole journey
+
+```bash
+python run.py                 # in one terminal
+python tools/journey.py       # in another
+```
+
+It signs a student up, signs a mentor up, publishes the mentor profile,
+sends and accepts a request, and checks that both sides end up in the same
+conversation.
+
+### Smoke-test the whole surface
+
+```bash
+python tools/smoke.py
+```
+
+107 checks over every page, every endpoint and the error paths.
 
 ### Run the load test
 
@@ -298,7 +331,10 @@ Career-Twin-main/
     │   ├── cli_client.py        the command line client
     │   └── udp_discovery.py     optional LAN discovery
     ├── scripts/seed_mentors.py
+    ├── scripts/gen_cert.sh
     ├── tools/loadtest.py
+    ├── tools/smoke.py
+    ├── tools/journey.py
     ├── static/
     │   ├── css/tokens.css       the only place variables are defined
     │   ├── css/base.css layout.css components.css

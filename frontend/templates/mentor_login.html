@@ -1,0 +1,109 @@
+{% extends "base_public.html" %}
+
+{% block title %}Mentor sign in — CareerTwin{% endblock %}
+{% block description %}Sign in to the CareerTwin mentor side to review mentorship requests and chat with your mentees.{% endblock %}
+{% block page_css %}<link rel="stylesheet" href="/static/css/pages/auth.css">{% endblock %}
+{% block nav %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<div class="auth">
+  <aside class="auth__panel">
+    <a class="auth__brand" href="{{ url_for('index') }}">
+      <span><svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-logo"></use></svg></span>
+      <span>CareerTwin</span>
+    </a>
+
+    <div class="auth__pitch">
+      <h2>Mentor side.</h2>
+      <p>
+        One account, two roles. Sign in here to review the students who asked
+        you to be their mentor.
+      </p>
+      <ul class="auth__points">
+        <li>
+          <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-check-circle"></use></svg>
+          <span>See who is asking, with their skills and target role</span>
+        </li>
+        <li>
+          <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-check-circle"></use></svg>
+          <span>Accept or decline in one click — your capacity is respected</span>
+        </li>
+        <li>
+          <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-check-circle"></use></svg>
+          <span>Chat live once a mentorship is active</span>
+        </li>
+      </ul>
+    </div>
+
+    <p class="small" style="color: rgba(255,255,255,.5); margin:0;">
+      CareerTwin — Computer Networks course project.
+    </p>
+  </aside>
+
+  <section class="auth__form-side">
+    <div class="auth__form-wrap">
+      <a class="auth__back" href="{{ url_for('index') }}">
+        <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-arrow-left"></use></svg>
+        Back to home
+      </a>
+
+      <a class="auth__mobile-brand" href="{{ url_for('index') }}">
+        <span class="marketing-nav__logo">
+          <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-logo"></use></svg>
+        </span>
+        <span>CareerTwin</span>
+      </a>
+
+      <h1 class="auth__title">Mentor sign in</h1>
+      <p class="auth__subtitle">
+        Use the same account you registered with. If you have not created a
+        mentor profile yet, we will take you there first.
+      </p>
+
+      {% if error %}
+      <div class="alert alert--error form-error" role="alert">
+        <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-alert-circle"></use></svg>
+        <div class="alert__body">{{ error }}</div>
+      </div>
+      {% endif %}
+
+      <form class="auth__form" action="{{ url_for('auth.mentor_login') }}" method="POST" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        {% if request.args.get('next') %}
+        <input type="hidden" name="next" value="{{ request.args.get('next') }}">
+        {% endif %}
+
+        <div class="field">
+          <label class="field__label" for="f-email"><span>Email address</span></label>
+          <input type="email" id="f-email" name="email" placeholder="you@example.com"
+                 autocomplete="email" required autofocus>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="f-password"><span>Password</span></label>
+          <div class="field__password">
+            <input type="password" id="f-password" name="password" placeholder="Your password"
+                   autocomplete="current-password" required>
+            <button class="field__password-btn" type="button" data-password-toggle="f-password"
+                    aria-pressed="false">
+              <svg aria-hidden="true"><use href="/static/icons/sprite.svg#icon-eye"></use></svg>
+              <span data-toggle-label>Show</span>
+            </button>
+          </div>
+        </div>
+
+        <button class="btn btn--primary btn--lg btn--block" type="submit">Sign in as a mentor</button>
+      </form>
+
+      <p class="auth__footer">
+        Not a mentor yet?
+        <a href="{{ url_for('auth.register') }}">Create a mentor account</a>
+      </p>
+      <p class="auth__footer small">
+        Are you a student? <a href="{{ url_for('auth.login') }}">Student sign in</a>
+      </p>
+    </div>
+  </section>
+</div>
+{% endblock %}

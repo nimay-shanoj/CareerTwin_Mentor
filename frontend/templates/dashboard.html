@@ -109,14 +109,31 @@
   <div class="card__body mentor-widget">
     <span class="stat__icon" style="width:52px;height:52px">{{ icon("message-circle") }}</span>
     <div class="mentor-widget__body">
-      <h3 id="mentorWidgetTitle">Mentorship</h3>
-      <p id="mentorWidgetText">
-        Get matched with a mentor and chat live when you hit a wall.
-      </p>
+      {% if is_mentor %}
+        <h3 id="mentorWidgetTitle">Your mentoring</h3>
+        <p id="mentorWidgetText">
+          {% if g.nav_notifications and g.nav_notifications.pending_requests %}
+            You have <strong>{{ g.nav_notifications.pending_requests }}</strong>
+            new request{{ 's' if g.nav_notifications.pending_requests != 1 else '' }} waiting.
+          {% else %}
+            No new requests right now. Share your profile to attract students.
+          {% endif %}
+        </p>
+      {% else %}
+        <h3 id="mentorWidgetTitle">Mentorship</h3>
+        <p id="mentorWidgetText">
+          Get matched with a mentor and chat live when you hit a wall.
+        </p>
+      {% endif %}
     </div>
     <div class="row">
-      <a class="btn btn--primary" href="{{ url_for('mentorship_bp.mentors_page') }}">Find a mentor</a>
-      <a class="btn btn--ghost" href="{{ url_for('chat_bp.messages_page') }}">Messages</a>
+      {% if is_mentor %}
+        <a class="btn btn--primary" href="{{ url_for('mentorship_bp.mentorship_page') }}">Open requests</a>
+        <a class="btn btn--ghost" href="{{ url_for('mentorship_bp.become_mentor_page') }}">Edit profile</a>
+      {% else %}
+        <a class="btn btn--primary" href="{{ url_for('mentorship_bp.mentors_page') }}">Find a mentor</a>
+        <a class="btn btn--ghost" href="{{ url_for('chat_bp.messages_page') }}">Messages</a>
+      {% endif %}
     </div>
   </div>
 </section>

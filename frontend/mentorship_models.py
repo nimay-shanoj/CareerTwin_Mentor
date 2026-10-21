@@ -30,6 +30,37 @@ OPEN_STATUSES = (REQ_PENDING, REQ_ACCEPTED)
 FINAL_STATUSES = (REQ_DECLINED, REQ_CANCELLED, REQ_ENDED)
 
 
+def mentor_profile_for(user):
+    """The user's mentor profile, or ``None``.
+
+    Works for an anonymous user and for a user row that has not been flushed
+    yet.
+    """
+    if user is None or getattr(user, "id", None) is None:
+        return None
+    try:
+        return MentorProfile.query.filter_by(user_id=user.id).first()
+    except Exception:
+        return None
+
+
+def is_mentor(user):
+    """True when the user has a *published* mentor profile.
+
+    The role is derived, never stored on ``users``: a user becomes a mentor
+    by publishing a mentor profile, and everybody else is a mentee. The two
+    roles are not exclusive — a mentor can also ask a mentor for help.
+    """
+    profile = mentor_profile_for(user)
+    return profile is not None and bool(profile.is_active) and not profile.is_draft
+
+
+def is_mentor_draft(user):
+    """True when the user started a mentor profile but never published it."""
+    profile = mentor_profile_for(user)
+    return profile is not None and bool(profile.is_draft)
+
+
 class MentorProfile(db.Model):
     __tablename__ = "mentor_profiles"
 
@@ -51,6 +82,10 @@ class MentorProfile(db.Model):
     availability = db.Column(db.Text, nullable=True)
     max_mentees = db.Column(db.Integer, nullable=False, default=3)
     is_active = db.Column(db.Boolean, nullable=False, default=True)
+    # A draft is a profile that was started (the user signed up as a mentor)
+    # but not published yet: it is hidden from the directory and the user is
+    # sent back to the onboarding until they complete it.
+    is_draft = db.Column(db.Boolean, nullable=False, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     user = db.relationship("User", backref=db.backref("mentor_profile", uselist=False))

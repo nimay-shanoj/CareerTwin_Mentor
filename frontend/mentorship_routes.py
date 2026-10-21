@@ -261,7 +261,18 @@ def upsert_my_mentor_profile():
     profile.timezone = (data.get("timezone") or "").strip()[:50]
     profile.availability = (data.get("availability") or "").strip()
     profile.max_mentees = max_mentees
-    profile.is_active = bool(data.get("is_active", True))
+
+    # Publishing the onboarding takes the profile out of the draft state, so
+    # it shows up in the directory. An empty profile is never published.
+    has_content = bool(
+        (profile.headline or "").strip() or (profile.expertise or "").strip()
+    )
+    if has_content:
+        profile.is_draft = False
+        profile.is_active = bool(data.get("is_active", True))
+    else:
+        profile.is_draft = True
+        profile.is_active = False
 
     try:
         db.session.commit()
@@ -476,8 +487,14 @@ def mentors_page():
 @mentorship_bp.route("/mentors/become.html", methods=["GET"])
 @login_required
 def become_mentor_page():
+    from mentorship_models import is_mentor_draft
+
     my_profile = MentorProfile.query.filter_by(user_id=current_user.id).first()
-    return render_template("become_mentor.html", mentor_profile=my_profile)
+    return render_template(
+        "become_mentor.html",
+        mentor_profile=my_profile,
+        is_draft=is_mentor_draft(current_user),
+    )
 
 
 @mentorship_bp.route("/mentors/<int:user_id>", methods=["GET"])

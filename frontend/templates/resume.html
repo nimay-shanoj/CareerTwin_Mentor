@@ -7,8 +7,8 @@
 {% block content %}
 {% from "macros/ui.html" import icon, progress_ring %}
 
-<div style="margin-bottom: var(--sp-6);">
-  <h1 style="margin-bottom: var(--sp-1)">Resume analyser</h1>
+<div class="mb-6">
+  <h1 class="mb-1">Resume analyser</h1>
   <p class="page__subtitle">Upload a resume and get an instant score, the skills it contains and what to fix.</p>
 </div>
 
@@ -34,7 +34,7 @@
 
         <input type="file" id="resumeFile" accept=".txt,.pdf,.doc,.docx,.rtf,.odt" hidden>
 
-        <div class="row" style="margin-top: var(--sp-5);">
+        <div class="row mt-5" >
           <button class="btn btn--primary" type="button" id="analyzeBtn">
             {{ icon("sparkles") }}
             <span>Analyse resume</span>
@@ -65,11 +65,11 @@
 
           <div class="stack">
             <div>
-              <h3 style="font-size: var(--fs-16)">Skills found</h3>
+              <h3 class="fs-16">Skills found</h3>
               <ul class="chip-list" id="skillsList"></ul>
             </div>
             <div>
-              <h3 style="font-size: var(--fs-16)">Suggestions</h3>
+              <h3 class="fs-16">Suggestions</h3>
               <ul class="suggestion-list" id="suggestionsList"></ul>
             </div>
           </div>
@@ -87,14 +87,14 @@
         </div>
       </header>
       <div class="card__body" id="lastAnalysis">
-        <p class="muted small" style="margin:0">No resume analysed yet.</p>
+        <p class="muted small m-0" >No resume analysed yet.</p>
       </div>
     </section>
 
     <section class="card">
       <div class="card__body">
-        <h3 class="card__title" style="font-size: var(--fs-16); margin-bottom: var(--sp-2)">How scoring works</h3>
-        <p class="small muted" style="margin:0">
+        <h3 class="card__title fs-16 mb-2" >How scoring works</h3>
+        <p class="small muted m-0" >
           The analyser looks for a fixed set of technology keywords in the text of your
           resume. Each distinct skill adds 8 points to a base of 40, capped at 100.
           Suggestions list the skills that were <em>not</em> detected.

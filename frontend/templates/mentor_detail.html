@@ -7,7 +7,7 @@
 {% block content %}
 {% from "macros/ui.html" import icon %}
 
-<nav class="row" style="margin-bottom: var(--sp-5);">
+<nav class="row mb-5" >
   <a class="btn btn--ghost btn--sm" href="{{ url_for('mentorship_bp.mentors_page') }}">
     {{ icon("arrow-left") }}
     <span>Back to directory</span>
@@ -49,8 +49,8 @@
     </div>
   </div>
 
-  <div style="text-align:center">
-    <div class="match match--lg" style="justify-content:center">
+  <div class="text-center">
+    <div class="match match--lg justify-center" >
       <span class="match__value">{{ match }}%</span>
       <span class="match__bar">
         <span class="match__fill" style="width: {{ match }}%"></span>
@@ -59,9 +59,9 @@
     <div class="small" style="color: rgba(255,255,255,.7); margin-top: 4px;">match with your goal</div>
 
     {% if existing_request %}
-      <span class="badge badge--accent" style="margin-top: var(--sp-3);">Request {{ existing_request.status }}</span>
+      <span class="badge badge--accent mt-3" >Request {{ existing_request.status }}</span>
     {% else %}
-      <button class="btn btn--accent" type="button" data-modal-open="requestModal" style="margin-top: var(--sp-4);">
+      <button class="btn btn--accent mt-4" type="button" data-modal-open="requestModal" >
         {{ icon("message-circle") }}
         <span>Request mentorship</span>
       </button>
@@ -77,9 +77,9 @@
       </header>
       <div class="card__body">
         {% if mentor.bio %}
-        <p style="margin:0">{{ mentor.bio }}</p>
+        <p class="m-0">{{ mentor.bio }}</p>
         {% else %}
-        <p class="muted" style="margin:0">This mentor has not written a bio yet.</p>
+        <p class="muted m-0" >This mentor has not written a bio yet.</p>
         {% endif %}
       </div>
     </section>
@@ -126,9 +126,9 @@
       </header>
       <div class="card__body">
         {% if mentor.availability %}
-        <p style="margin:0">{{ mentor.availability }}</p>
+        <p class="m-0">{{ mentor.availability }}</p>
         {% else %}
-        <p class="muted" style="margin:0">Not specified — send a message to ask.</p>
+        <p class="muted m-0" >Not specified — send a message to ask.</p>
         {% endif %}
       </div>
     </section>
@@ -151,7 +151,7 @@
         reply faster to a clear ask.
       </p>
 
-      <div class="field" style="margin-bottom: var(--sp-3)">
+      <div class="field mb-3" >
         <label class="field__label" for="requestMessage">
           <span>Your message</span>
           <span class="small subtle" id="charCount">0 / 500</span>

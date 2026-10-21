@@ -342,7 +342,7 @@
   height: 42px;
   border-radius: var(--r-sm);
   background: var(--brand-100);
-  color: var(--brand-700);
+  color: var(--on-brand-100);
 }
 
 .stat__icon svg { width: 20px; height: 20px; }
@@ -578,7 +578,7 @@
   height: 40px;
   border-radius: var(--r-full);
   background: var(--brand-100);
-  color: var(--brand-700);
+  color: var(--on-brand-100);
   font-family: var(--font-display);
   font-size: var(--fs-14);
   font-weight: var(--fw-bold);
@@ -818,6 +818,50 @@ body.modal-open { overflow: hidden; }
   0% { background-position: 100% 50%; }
   100% { background-position: 0 50%; }
 }
+
+/* --------------------------------------------------------------------------
+   Utilities
+   A thin layer over the spacing scale. These exist so the templates do not
+   need one-off inline styles.
+   -------------------------------------------------------------------------- */
+.m-0 { margin: 0; }
+.mb-0 { margin-bottom: 0; }
+.mt-0 { margin-top: 0; }
+.p-0 { padding: 0; }
+.mb-1 { margin-bottom: var(--sp-1); }
+.mb-2 { margin-bottom: var(--sp-2); }
+.mb-3 { margin-bottom: var(--sp-3); }
+.mb-4 { margin-bottom: var(--sp-4); }
+.mb-5 { margin-bottom: var(--sp-5); }
+.mb-6 { margin-bottom: var(--sp-6); }
+.mb-7 { margin-bottom: var(--sp-7); }
+.mb-8 { margin-bottom: var(--sp-8); }
+.mt-2 { margin-top: var(--sp-2); }
+.mt-3 { margin-top: var(--sp-3); }
+.mt-4 { margin-top: var(--sp-4); }
+.mt-5 { margin-top: var(--sp-5); }
+.mt-6 { margin-top: var(--sp-6); }
+.mt-7 { margin-top: var(--sp-7); }
+.mt-8 { margin-top: var(--sp-8); }
+.mt-10 { margin-top: var(--sp-10); }
+.p-3 { padding: var(--sp-3); }
+.gap-2 { gap: var(--sp-2); }
+.gap-3 { gap: var(--sp-3); }
+.fs-13 { font-size: var(--fs-13); }
+.fs-14 { font-size: var(--fs-14); }
+.fs-16 { font-size: var(--fs-16); }
+.max-420 { max-width: 420px; }
+.max-520 { max-width: 520px; }
+.max-720 { max-width: 720px; }
+.max-760 { max-width: 760px; }
+.ml-1 { margin-left: 6px; }
+.my-6 { margin: var(--sp-6) 0; }
+.relative { position: relative; }
+.ring-128 { width: 128px; height: 128px; }
+.items-start { align-items: flex-start; }
+.items-center { align-items: center; }
+.justify-center { justify-content: center; }
+.list-none { list-style: none; }
 
 /* --------------------------------------------------------------------------
    Tooltip

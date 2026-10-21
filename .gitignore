@@ -24,6 +24,11 @@ env/
 # User uploads (never commit real resumes)
 uploads/
 
+# TLS material (stretch goal) – never commit private keys
+certs/
+*.key
+*.pem
+
 # Archives / IDE cruft
 *.zip
 .idea/

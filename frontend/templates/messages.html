@@ -11,9 +11,9 @@
      data-conversation-id="{{ conversation.id if conversation else '' }}"
      data-current-user-id="{{ current_user.id }}">
 
-  <div class="row row--between" style="margin-bottom: var(--sp-4);">
+  <div class="row row--between mb-4" >
     <div>
-      <h1 style="margin-bottom: var(--sp-1)">Messages</h1>
+      <h1 class="mb-1">Messages</h1>
       <p class="page__subtitle">
         {% if conversation %}
           Live chat over WebSocket. Messages are persisted before they are sent.
@@ -98,7 +98,7 @@
           <span>Messages are saved to the database before delivery.</span>
         </div>
         {% else %}
-        <p class="small subtle" style="margin:0">
+        <p class="small subtle m-0" >
           {% if conversation %}
             This conversation is read-only.
           {% else %}

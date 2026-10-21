@@ -19,18 +19,18 @@
 {% block content %}
 {% from "macros/ui.html" import icon, progress_bar, select %}
 
-<div class="row row--between" style="margin-bottom: var(--sp-6); align-items: flex-start;">
+<div class="row row--between mb-6 items-start" >
   <div>
-    <h1 style="margin-bottom: var(--sp-1)">Your profile</h1>
+    <h1 class="mb-1">Your profile</h1>
     <p class="page__subtitle">Everything here drives your roadmap, skill gap and mentor matches.</p>
   </div>
-  <div class="row" style="gap: var(--sp-3);">
+  <div class="row gap-3" >
     <span class="badge badge--brand">{{ completion }}% complete</span>
   </div>
 </div>
 
 {% if error_msg %}
-<div class="alert alert--error" role="alert" style="margin-bottom: var(--sp-5);">
+<div class="alert alert--error mb-5" role="alert" >
   {{ icon("alert-circle") }}
   <div class="alert__body">{{ error_msg }}</div>
 </div>
@@ -39,7 +39,7 @@
 <form method="POST" action="{{ url_for('profile_bp.profile') }}">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-  <div class="stack stack--lg" style="max-width: 760px;">
+  <div class="stack stack--lg max-760">
 
     <!-- ── Personal ──────────────────────────────────────────────── -->
     <section class="card">

@@ -24,7 +24,7 @@ import socket
 import threading
 import time
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 from network.protocol import (
     ACK,
@@ -393,7 +393,7 @@ class TcpChatServer:
         elif frame_type == PING:
             await connection.send(
                 {"type": PONG, "id": uuid.uuid4().hex, "t": frame.get("t"),
-                 "server_time": datetime.utcnow().timestamp() * 1000.0}
+                 "server_time": datetime.now(timezone.utc).timestamp() * 1000.0}
             )
         elif frame_type == BYE:
             await connection.send({"type": BYE, "id": uuid.uuid4().hex})
@@ -442,7 +442,7 @@ class TcpChatServer:
                 "type": WELCOME,
                 "id": uuid.uuid4().hex,
                 "user": {"id": user.id, "name": user.name},
-                "server_time": datetime.utcnow().timestamp() * 1000.0,
+                "server_time": datetime.now(timezone.utc).timestamp() * 1000.0,
                 "heartbeat_s": self.heartbeat,
                 "connection_id": connection.id,
             }

@@ -1,0 +1,9 @@
+# Render / Railway / Fly.io.
+#
+# One worker on purpose: the connection hub lives in the process that owns
+# the sockets, so a second worker would not see the first one's clients.
+# See docs/NETWORK_ARCHITECTURE.md section 4.9.
+#
+# gevent is the worker class that handles thousands of concurrent
+# WebSocket connections on a single core.
+web: gunicorn --worker-class gevent --workers 1 --bind 0.0.0.0:$PORT --access-logfile - --timeout 120 app:app

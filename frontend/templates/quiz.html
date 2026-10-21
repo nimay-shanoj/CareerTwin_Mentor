@@ -12,15 +12,15 @@
   <!-- ── Intro ──────────────────────────────────────────────────────── -->
   <section id="setup" class="card">
     <div class="card__body card__body--loose">
-      <span class="section__label" style="margin-bottom: var(--sp-4)">Assessment</span>
-      <h1 style="margin-bottom: var(--sp-3)">Find your best-fit tech role</h1>
+      <span class="section__label mb-4" >Assessment</span>
+      <h1 class="mb-3">Find your best-fit tech role</h1>
       <p class="quiz-intro muted">
         Twenty questions covering Python, frontend structure, SQL querying and general
         computer-science logic. Your answer pattern is scored against each of the four
         target roles, and the results are saved to your account.
       </p>
 
-      <div class="row" style="margin: var(--sp-6) 0; gap: var(--sp-2);">
+      <div class="row my-6 gap-2">
         <span class="badge badge--info">Python Developer</span>
         <span class="badge badge--brand">Backend Developer</span>
         <span class="badge badge--warning">Full Stack Developer</span>
@@ -32,8 +32,8 @@
         <span>Start the assessment</span>
       </button>
 
-      <div id="historyBox" hidden style="margin-top: var(--sp-8);">
-        <h2 style="font-size: var(--fs-16); margin-bottom: var(--sp-3)">Previous attempts</h2>
+      <div id="historyBox" hidden class="mt-8">
+        <h2 class="fs-16 mb-3">Previous attempts</h2>
         <div class="quiz-history" id="historyList"></div>
       </div>
     </div>
@@ -55,14 +55,14 @@
       <div class="quiz-options" id="options" role="group" aria-label="Answer options"></div>
     </div>
 
-    <div class="row row--end" style="margin-top: var(--sp-5);">
+    <div class="row row--end mt-5" >
       <button class="btn btn--primary" type="button" id="nextBtn" hidden>
         <span>Next question</span>
         {{ icon("arrow-right") }}
       </button>
     </div>
 
-    <p class="small subtle text-center" style="margin-top: var(--sp-4);">
+    <p class="small subtle text-center mt-4" >
       Tip: press <kbd>1</kbd>–<kbd>4</kbd> to answer and <kbd>Enter</kbd> to continue.
     </p>
   </section>
@@ -74,10 +74,10 @@
       <h2 class="quiz-result__headline" id="finalScore"></h2>
       <p class="muted" id="finalMsg"></p>
 
-      <h3 style="font-size: var(--fs-16); margin-top: var(--sp-6)">Career compatibility breakdown</h3>
+      <h3 class="fs-16 mt-6">Career compatibility breakdown</h3>
       <div class="compat-list" id="barsContainer"></div>
 
-      <div class="row" style="margin-top: var(--sp-7);">
+      <div class="row mt-7" >
         <button class="btn btn--secondary" type="button" id="retryBtn">Try again</button>
         <a class="btn btn--primary" href="{{ url_for('dashboard_page') }}">Back to dashboard</a>
         <a class="btn btn--ghost" href="{{ url_for('roadmap_page') }}">View my roadmap</a>

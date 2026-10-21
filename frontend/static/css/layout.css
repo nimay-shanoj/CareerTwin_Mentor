@@ -581,7 +581,7 @@ body.sidebar-collapsed .sidebar__badge {
   padding: 4px 12px;
   border-radius: var(--r-full);
   background: var(--brand-100);
-  color: var(--brand-700);
+  color: var(--on-brand-100);
   font-size: var(--fs-12);
   font-weight: var(--fw-bold);
   letter-spacing: var(--tracking-wider);

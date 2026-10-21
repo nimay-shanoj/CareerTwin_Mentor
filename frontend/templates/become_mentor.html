@@ -7,8 +7,8 @@
 {% block content %}
 {% from "macros/ui.html" import icon %}
 
-<div style="margin-bottom: var(--sp-6); max-width: 720px;">
-  <h1 style="margin-bottom: var(--sp-1)">
+<div class="mb-6 max-720">
+  <h1 class="mb-1">
     {% if mentor_profile %}Edit your mentor profile{% else %}Become a mentor{% endif %}
   </h1>
   <p class="page__subtitle">
@@ -17,7 +17,7 @@
   </p>
 </div>
 
-<form id="mentorForm" style="max-width: 720px;">
+<form id="mentorForm" class="max-720">
   <div class="stack stack--lg">
 
     <section class="card">
@@ -89,7 +89,7 @@
           </p>
         </div>
 
-        <div class="field" style="margin-bottom:0">
+        <div class="field mb-0" >
           <label class="field__label" for="availability"><span>Availability</span></label>
           <textarea id="availability" rows="3"
                     placeholder="e.g. Weekends, or weekday evenings after 7pm IST">{{ mentor_profile.availability if mentor_profile else '' }}</textarea>
@@ -108,8 +108,8 @@
     <section class="card">
       <div class="card__body row row--between">
         <div>
-          <h2 class="card__title" style="font-size: var(--fs-16)">Deactivate your profile</h2>
-          <p class="small muted" style="margin:0">
+          <h2 class="card__title fs-16" >Deactivate your profile</h2>
+          <p class="small muted m-0" >
             You will no longer appear in the directory. Existing conversations are kept.
           </p>
         </div>

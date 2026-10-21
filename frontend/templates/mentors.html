@@ -7,9 +7,9 @@
 {% block content %}
 {% from "macros/ui.html" import icon, avatar, badge %}
 
-<div class="row row--between" style="margin-bottom: var(--sp-6); align-items: flex-start;">
+<div class="row row--between mb-6 items-start" >
   <div>
-    <h1 style="margin-bottom: var(--sp-1)">Mentor directory</h1>
+    <h1 class="mb-1">Mentor directory</h1>
     <p class="page__subtitle">Find someone who already did what you want to do.</p>
   </div>
   <div class="row">
@@ -23,28 +23,28 @@
 
 <!-- ── Filters ──────────────────────────────────────────────────────── -->
 <div class="mentor-filters">
-  <div class="field" style="margin:0">
+  <div class="field m-0" >
     <label class="field__label" for="q"><span>Search</span></label>
-    <div style="position:relative">
+    <div class="relative">
       <input type="search" id="q" placeholder="Name, company, skill or headline">
     </div>
   </div>
 
-  <div class="field" style="margin:0">
+  <div class="field m-0" >
     <label class="field__label" for="expertise"><span>Expertise</span></label>
     <input type="text" id="expertise" placeholder="e.g. python">
     <div class="expertise-filters" id="expertiseChips"></div>
   </div>
 
-  <div class="field" style="margin:0">
+  <div class="field m-0" >
     <label class="field__label" for="matchOnly"><span>Matching</span></label>
-    <div class="row" style="gap: var(--sp-2);">
+    <div class="row gap-2" >
       <button class="chip" type="button" id="matchOnly" aria-pressed="false">Matches my goal only</button>
     </div>
   </div>
 </div>
 
-<div class="row row--between" style="margin-bottom: var(--sp-4);">
+<div class="row row--between mb-4" >
   <span class="small muted" id="resultCount">Loading mentors…</span>
   <button class="btn btn--ghost btn--sm" type="button" id="clearFilters">Clear filters</button>
 </div>

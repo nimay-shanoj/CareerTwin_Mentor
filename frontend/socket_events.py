@@ -15,7 +15,7 @@ makes the WebSocket and TCP transports symmetric.
 """
 
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 
 from flask import request
 from flask_login import current_user
@@ -262,7 +262,10 @@ def on_rtt_ping(data):
     return {
         "ok": True,
         "t": data.get("t"),
-        "server_time": datetime.utcnow().timestamp() * 1000.0,
+        # `datetime.now(timezone.utc)` is used on purpose: `utcnow()` returns a
+        # naive datetime, and `.timestamp()` would then interpret it as local
+        # time, which is off by the UTC offset.
+        "server_time": datetime.now(timezone.utc).timestamp() * 1000.0,
         "received_at": time.time(),
     }
 
@@ -270,4 +273,4 @@ def on_rtt_ping(data):
 @socketio.on("ping", namespace=NAMESPACE)
 def on_plain_ping(data):
     """Socket.IO's own liveness ping, answered with a timestamp."""
-    return {"server_time": datetime.utcnow().timestamp() * 1000.0}
+    return {"server_time": datetime.now(timezone.utc).timestamp() * 1000.0}

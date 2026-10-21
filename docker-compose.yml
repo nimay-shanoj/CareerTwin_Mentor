@@ -1,0 +1,49 @@
+version: "3.9"
+
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: careertwin
+      MYSQL_USER: careertwin
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-change-me-in-production}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-change-me-too}
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "3306:3306"
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SECRET_KEY: ${SECRET_KEY:-please-change-this-secret}
+      FLASK_DEBUG: "false"
+      DATABASE_URL: mysql+pymysql://careertwin:${MYSQL_PASSWORD:-change-me-in-production}@db:3306/careertwin
+      UPLOAD_FOLDER: /app/uploads
+      TCP_CHAT_ENABLED: "1"
+      TCP_CHAT_HOST: 0.0.0.0
+      TCP_CHAT_PORT: "9000"
+      SOCKETIO_ASYNC_MODE: gevent
+      SESSION_COOKIE_SECURE: auto
+    volumes:
+      - uploads:/app/uploads
+    ports:
+      - "5000:5000"    # HTTP + WebSocket
+      - "9000:9000"    # the raw TCP chat protocol
+
+volumes:
+  mysql-data:
+  uploads:

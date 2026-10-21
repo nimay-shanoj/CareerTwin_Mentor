@@ -16,6 +16,8 @@
   --brand-200: #c2e7da;
   --brand-100: #e3f4ec;
   --brand-050: #f1faf6;
+  /* Foreground for elements that sit on a --brand-100 surface. */
+  --on-brand-100: #1a5c44;
 
   --accent: #9cff57;
   --accent-strong: #7de62f;
@@ -143,6 +145,9 @@
   --brand-200: #2a5c49;
   --brand-100: #163a2d;
   --brand-050: #10261e;
+  /* In dark mode the "brand-100" surface is dark, so the foreground has to
+     be a light tint instead of a dark green. */
+  --on-brand-100: #8ed4ba;
 
   --accent: #9cff57;
   --accent-strong: #b3ff7d;

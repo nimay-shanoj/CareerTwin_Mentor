@@ -7,14 +7,14 @@
 {% block content %}
 {% from "macros/ui.html" import icon %}
 
-<div style="margin-bottom: var(--sp-6);">
-  <h1 style="margin-bottom: var(--sp-1)">Roadmap generator</h1>
+<div class="mb-6">
+  <h1 class="mb-1">Roadmap generator</h1>
   <p class="page__subtitle">Pick a goal and get a step-by-step path. Every step links to the tasks in your progress tracker.</p>
 </div>
 
-<section class="card" style="max-width: 520px; margin-bottom: var(--sp-6);">
+<section class="card max-520 mb-6" >
   <div class="card__body">
-    <div class="field" style="margin:0">
+    <div class="field m-0" >
       <label class="field__label" for="career"><span>Career goal</span></label>
       <select id="career">
         <option value="">Select a goal</option>
@@ -23,7 +23,7 @@
         {% endfor %}
       </select>
     </div>
-    <button class="btn btn--primary" type="button" id="generateBtn" style="margin-top: var(--sp-4);">
+    <button class="btn btn--primary mt-4" type="button" id="generateBtn" >
       {{ icon("map") }}
       <span>Generate roadmap</span>
     </button>
@@ -32,9 +32,9 @@
 
 <div class="timeline roadmap-steps" id="roadmap" hidden></div>
 
-<div class="card" id="placeholder" style="max-width: 520px;">
+<div class="card max-520" id="placeholder" >
   <div class="card__body">
-    <p class="muted" style="margin:0">
+    <p class="muted m-0" >
       Choose a career goal above to see its roadmap.
     </p>
   </div>

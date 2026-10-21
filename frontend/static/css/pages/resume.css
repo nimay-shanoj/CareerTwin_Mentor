@@ -27,7 +27,7 @@
   width: 52px; height: 52px;
   border-radius: var(--r-md);
   background: var(--brand-100);
-  color: var(--brand-700);
+  color: var(--on-brand-100);
 }
 
 .dropzone__icon svg { width: 24px; height: 24px; }

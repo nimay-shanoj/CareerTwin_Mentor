@@ -3,7 +3,7 @@
    ========================================================================== #}
 {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
-    <div class="stack stack--sm" style="margin-bottom: var(--sp-5);">
+    <div class="stack stack--sm mb-5" >
       {% for category, message in messages %}
         {% set variant = 'error' if category in ['error', 'danger'] else ('success' if category == 'success' else 'info') %}
         <div class="alert alert--{{ variant }}" role="{{ 'alert' if variant == 'error' else 'status' }}">

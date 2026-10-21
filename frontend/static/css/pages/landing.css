@@ -286,7 +286,7 @@
   margin-bottom: var(--sp-4);
   border-radius: var(--r-md);
   background: var(--brand-100);
-  color: var(--brand-700);
+  color: var(--on-brand-100);
 }
 
 .feature-card__icon svg { width: 22px; height: 22px; }

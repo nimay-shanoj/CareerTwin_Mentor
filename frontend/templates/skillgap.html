@@ -10,8 +10,8 @@
 {% block content %}
 {% from "macros/ui.html" import icon, progress_bar %}
 
-<div style="margin-bottom: var(--sp-6);">
-  <h1 style="margin-bottom: var(--sp-1)">Skill gap analysis</h1>
+<div class="mb-6">
+  <h1 class="mb-1">Skill gap analysis</h1>
   <p class="page__subtitle">Pick a target role and compare it against the skills you already have.</p>
 </div>
 
@@ -73,7 +73,7 @@
                id="scoreBar" aria-label="Role match">
             <div class="progress__fill" id="scoreFill" style="width: 0%"></div>
           </div>
-          <div class="row" style="margin-top: var(--sp-4);">
+          <div class="row mt-4" >
             <a class="btn btn--primary btn--sm" href="{{ url_for('roadmap_page') }}">
               Generate roadmap
               {{ icon("arrow-right") }}
@@ -88,12 +88,12 @@
   <aside class="stack">
     <section class="card">
       <div class="card__body">
-        <h2 class="card__title" style="font-size: var(--fs-16); margin-bottom: var(--sp-3)">Role benchmarks</h2>
+        <h2 class="card__title fs-16 mb-3" >Role benchmarks</h2>
         <div class="stack stack--sm">
           {% for career in careers %}
           <div>
-            <div class="row row--between" style="gap: var(--sp-2);">
-              <strong style="font-size: var(--fs-13)">{{ career.name }}</strong>
+            <div class="row row--between gap-2" >
+              <strong class="fs-13">{{ career.name }}</strong>
               <span class="small subtle">{{ career.skills|length }} skills</span>
             </div>
             <div class="small subtle">{{ career.skills|join(', ') }}</div>

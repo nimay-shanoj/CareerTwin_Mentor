@@ -227,6 +227,8 @@
     var t = performance.now();
     socket.emit("rtt:ping", { t: t }, function (response) {
       if (!response) return;
+      stats.framesDown += 1;
+      stats.bytesDown += byteLength(response);
       var rtt = performance.now() - t;
       recordRtt(rtt);
       if (typeof response.server_time === "number") {
@@ -236,6 +238,7 @@
         stats.clockOffset = response.server_time - (Date.now() + rtt / 2);
         setText("clockOffset", (stats.clockOffset >= 0 ? "+" : "") + stats.clockOffset.toFixed(0) + " ms");
       }
+      updateCounters();
       logFrame("down", "rtt:pong", { rtt: Math.round(rtt) });
     });
     logFrame("up", "rtt:ping", { t: Math.round(t) });
@@ -337,15 +340,15 @@
     var originalEmit = socket.emit.bind(socket);
     socket.emit = function (event) {
       var args = Array.prototype.slice.call(arguments);
+      stats.framesUp += 1;
+      stats.bytesUp += byteLength(args[1] === undefined ? null : args[1]);
       if (event !== "rtt:ping") {
-        stats.framesUp += 1;
-        stats.bytesUp += byteLength(args[1]);
         logFrame("up", event, args[1] === undefined ? null : args[1]);
-        if (event === "message:send" && args[1]) {
-          stats.messagesUp += 1;
-        }
-        updateCounters();
       }
+      if (event === "message:send" && args[1]) {
+        stats.messagesUp += 1;
+      }
+      updateCounters();
       return originalEmit.apply(null, args);
     };
 

@@ -7,8 +7,8 @@
 {% block content %}
 {% from "macros/ui.html" import icon %}
 
-<div style="margin-bottom: var(--sp-6);">
-  <h1 style="margin-bottom: var(--sp-1)">Network lab</h1>
+<div class="mb-6">
+  <h1 class="mb-1">Network lab</h1>
   <p class="page__subtitle">
     A live view of the chat connection — round-trip time, frames, bytes and the
     raw protocol on the wire.
@@ -57,7 +57,7 @@
           <h2 class="card__title">Live event log</h2>
           <p class="card__subtitle">Every frame that crosses the socket, in order.</p>
         </div>
-        <div class="row" style="gap: var(--sp-2);">
+        <div class="row gap-2" >
           <button class="btn btn--secondary btn--sm" type="button" id="logPause" aria-pressed="false">
             {{ icon("pause") }}<span>Pause</span>
           </button>
@@ -93,7 +93,7 @@
 
           <div class="sim-toggle">
             <input type="checkbox" id="simEnabled">
-            <label for="simEnabled" style="margin:0">Enable simulation</label>
+            <label for="simEnabled" class="m-0">Enable simulation</label>
           </div>
 
           <div class="sim-row">
@@ -105,7 +105,7 @@
                    aria-label="Added latency in milliseconds">
           </div>
 
-          <div class="sim-row" style="margin-bottom:0">
+          <div class="sim-row mb-0" >
             <div class="sim-row__head">
               <span>Packet drop</span>
               <span class="sim-row__value" id="simDropValue">0 %</span>
@@ -176,7 +176,7 @@
           <li><code>ERR</code><span>Error with a stable code</span></li>
           <li><code>BYE</code><span>Graceful close</span></li>
         </ul>
-        <p class="small subtle" style="margin-top: var(--sp-4)">
+        <p class="small subtle mt-4" >
           See <span class="mono">docs/PROTOCOL.md</span> for the full specification and
           <span class="mono">docs/WIRESHARK.md</span> for capture instructions.
         </p>

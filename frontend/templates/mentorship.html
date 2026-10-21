@@ -7,9 +7,9 @@
 {% block content %}
 {% from "macros/ui.html" import icon %}
 
-<div class="row row--between" style="margin-bottom: var(--sp-6); align-items: flex-start;">
+<div class="row row--between mb-6 items-start" >
   <div>
-    <h1 style="margin-bottom: var(--sp-1)">Mentorship</h1>
+    <h1 class="mb-1">Mentorship</h1>
     <p class="page__subtitle">Requests, active mentorships and the conversations they unlock.</p>
   </div>
   <a class="btn btn--secondary btn--sm" href="{{ url_for('mentorship_bp.mentors_page') }}">
@@ -18,14 +18,14 @@
   </a>
 </div>
 
-<div class="tabs" style="margin-bottom: var(--sp-5); max-width: 420px;">
+<div class="tabs mb-5 max-420" >
   <button class="tabs__tab is-active" type="button" data-tab="incoming" role="tab" aria-selected="true">
     Incoming
-    {% if incoming %}<span class="badge badge--brand" style="margin-left:6px">{{ incoming|length }}</span>{% endif %}
+    {% if incoming %}<span class="badge badge--brand ml-1">{{ incoming|length }}</span>{% endif %}
   </button>
   <button class="tabs__tab" type="button" data-tab="outgoing" role="tab" aria-selected="false">
     Outgoing
-    {% if outgoing %}<span class="badge badge--brand" style="margin-left:6px">{{ outgoing|length }}</span>{% endif %}
+    {% if outgoing %}<span class="badge badge--brand ml-1">{{ outgoing|length }}</span>{% endif %}
   </button>
   <button class="tabs__tab" type="button" data-tab="active" role="tab" aria-selected="false">Active</button>
 </div>
@@ -39,7 +39,7 @@
         <span class="avatar">{{ row.other_name[:2]|upper }}</span>
         <div class="request-card__body">
           <h3>{{ row.other_name }}</h3>
-          <p class="small subtle" style="margin:0">Wants mentorship · sent {{ row.created_at.strftime('%d %b %Y') }}</p>
+          <p class="small subtle m-0" >Wants mentorship · sent {{ row.created_at.strftime('%d %b %Y') }}</p>
           {% if row.message %}
           <p class="request-card__msg">“{{ row.message }}”</p>
           {% endif %}
@@ -67,7 +67,7 @@
       <span class="avatar">{{ row.other_name[:2]|upper }}</span>
       <div class="request-card__body">
         <h3>{{ row.other_name }}</h3>
-        <p class="small subtle" style="margin:0">
+        <p class="small subtle m-0" >
           {{ row.status|capitalize }} · sent {{ row.created_at.strftime('%d %b %Y') }}
         </p>
         {% if row.message %}
@@ -102,7 +102,7 @@
       <span class="avatar">{{ row.other_name[:2]|upper }}</span>
       <div class="request-card__body">
         <h3>{{ row.other_name }}</h3>
-        <p class="small subtle" style="margin:0">
+        <p class="small subtle m-0" >
           Active mentorship · started {{ (row.responded_at or row.created_at).strftime('%d %b %Y') }}
         </p>
       </div>

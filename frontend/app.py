@@ -20,6 +20,12 @@ from chat_tokens import chat_token_store
 from config import Config
 from extensions import csrf, db, login_manager, socketio
 
+
+def _as_bool(value, default=False):
+    if value is None:
+        return default
+    return str(value).strip().lower() in {"1", "true", "yes", "on"}
+
 from auth import auth_bp
 from careers import CAREER_NAMES, CAREERS, careers_bp
 from chat_routes import chat_bp
@@ -94,6 +100,12 @@ def create_app(config_class=Config):
     # `now()` is used by the footer for the copyright year.
     app.jinja_env.globals["now"] = datetime.now
 
+    # Behind a reverse proxy the scheme and the client IP arrive in headers.
+    if _as_bool(os.environ.get("TRUST_PROXY"), False):
+        from werkzeug.middleware.proxy_fix import ProxyFix
+
+        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
+
     @app.context_processor
     def inject_shell_context():
         """Values every template needs: the page title and the badge counts."""
@@ -145,6 +157,39 @@ def create_app(config_class=Config):
             return jsonify({"error": "Authentication required", "code": "UNAUTHORIZED"}), 401
         # `next` is validated server-side in auth.py before it is used.
         return redirect(url_for("auth.login", next=request.full_path.rstrip("?")))
+
+    @app.after_request
+    def _adapt_session_cookie(response):
+        """Mark the session cookie Secure only on encrypted connections.
+
+        Flask sets the flag statically, but the right value depends on how
+        the client reached the server: a cookie marked Secure is silently
+        dropped by the browser over plain HTTP, which would break the
+        two-laptop LAN demo. With ``SESSION_COOKIE_SECURE=auto`` the flag
+        follows the scheme of the current request; set it to ``true`` or
+        ``false`` to force the behaviour.
+        """
+        mode = app.config.get("SESSION_COOKIE_SECURE_MODE", "auto")
+        header = response.headers.get("Set-Cookie")
+        if not header:
+            return response
+
+        if mode == "always":
+            if "; Secure" not in header:
+                response.headers["Set-Cookie"] = header + "; Secure"
+            return response
+
+        if mode == "never":
+            response.headers["Set-Cookie"] = header.replace("; Secure", "")
+            return response
+
+        # auto
+        if request.is_secure:
+            if "; Secure" not in header:
+                response.headers["Set-Cookie"] = header + "; Secure"
+        elif "; Secure" in header:
+            response.headers["Set-Cookie"] = header.replace("; Secure", "")
+        return response
 
     # ------------------------------------------------------------------
     # Error handlers
@@ -281,6 +326,29 @@ from models import User  # noqa: E402
 import socket_events  # noqa: E402,F401
 
 app = create_app()
+
+
+def start_background_services(target_app):
+    """Start the raw TCP chat server.
+
+    It runs in its own thread with its own event loop so that the CLI client
+    can talk to the same process — and therefore the same database — as the
+    web app. Set ``TCP_CHAT_ENABLED=0`` to switch it off.
+    """
+    if target_app.config.get("TESTING"):
+        return None
+    if not target_app.config.get("TCP_CHAT_ENABLED"):
+        return None
+    try:
+        from network.tcp_server import start_from_app
+
+        return start_from_app(target_app)
+    except Exception as exc:  # pragma: no cover - the web app must still run
+        target_app.logger.error("Could not start the TCP chat server: %s", exc)
+        return None
+
+
+start_background_services(app)
 
 
 if __name__ == "__main__":

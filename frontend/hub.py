@@ -68,19 +68,22 @@ class WebSocketSink(Sink):
 
     transport = "websocket"
 
-    def __init__(self, user_id, socketio, sid, connection_id=None):
+    def __init__(self, user_id, socketio, sid, connection_id=None, namespace="/chat"):
         super().__init__(user_id, connection_id or sid)
         self._socketio = socketio
         self.sid = sid
+        self.namespace = namespace
 
     def send(self, event, payload):
-        self._socketio.emit(event, payload, to=self.sid)
+        # The namespace matters: the chat clients live in `/chat`, not in the
+        # default namespace, so the emit has to name it explicitly.
+        self._socketio.emit(event, payload, to=self.sid, namespace=self.namespace)
         self.frames_out += 1
         self.bytes_out += len(str(payload))
 
     def close(self, reason=""):
         try:
-            self._socketio.server.disconnect(self.sid, namespace="/chat")
+            self._socketio.server.disconnect(self.sid, namespace=self.namespace)
         except Exception:
             pass
 
@@ -89,40 +92,29 @@ class TcpSink(Sink):
     """A raw TCP connection.
 
     The writer belongs to the TCP server's asyncio loop. When the hub is
-    called from another thread (e.g. the Flask/SocketIO thread) the write is
-    scheduled with `loop.call_soon_threadsafe`, which is the documented way
+    called from another thread (e.g. the Flask/SocketIO thread) the delivery
+    is scheduled with `loop.call_soon_threadsafe`, which is the documented way
     to interact with an asyncio loop from another thread.
+
+    `deliver` is a callable ``(event, payload) -> None`` supplied by the TCP
+    server. It owns the per-connection write queue, so backpressure (closing
+    slow consumers) is enforced in one place.
     """
 
     transport = "tcp"
 
-    def __init__(self, user_id, loop, writer, connection_id=None):
+    def __init__(self, user_id, loop, deliver, connection_id=None):
         super().__init__(user_id, connection_id)
         self._loop = loop
-        self._writer = writer
+        self._deliver = deliver
         self._closed = False
 
     def send(self, event, payload):
         """Called from any thread."""
-        from network.protocol import encode_frame  # local import: avoids a cycle
-
-        frame = encode_frame({"type": event.upper(), "payload": payload})
-        self._loop.call_soon_threadsafe(self._write_now, frame)
-
-    def _write_now(self, frame):
-        if self._closed:
-            return
-        try:
-            self._writer.write(frame)
-        except Exception:
-            self._closed = True
+        self._loop.call_soon_threadsafe(self._deliver, event, payload)
 
     def close(self, reason=""):
         self._closed = True
-        try:
-            self._loop.call_soon_threadsafe(self._writer.close)
-        except Exception:
-            pass
 
 
 class Hub:

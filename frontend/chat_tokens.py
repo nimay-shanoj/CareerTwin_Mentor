@@ -57,10 +57,18 @@ class ChatTokenStore:
         if not token or not isinstance(token, str):
             raise TokenError("MISSING_TOKEN", "A chat token is required.")
 
+        # `Serializer.loads()` ignores `max_age`, so the signer is used
+        # directly: `unsign()` is what enforces the expiry.
+        signer = self._serializer.make_signer()
         try:
-            payload = self._serializer.loads(token, max_age=self._ttl)
+            raw = signer.unsign(token, max_age=self._ttl)
         except SignatureExpired:
             raise TokenError("TOKEN_EXPIRED", "This chat token has expired.")
+        except BadSignature:
+            raise TokenError("TOKEN_INVALID", "This chat token is not valid.")
+
+        try:
+            payload = self._serializer.load_payload(raw)
         except BadSignature:
             raise TokenError("TOKEN_INVALID", "This chat token is not valid.")
 

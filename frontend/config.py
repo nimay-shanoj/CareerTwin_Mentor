@@ -90,8 +90,22 @@ class Config:
     # --- Sessions & cookies ----------------------------------------------
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"
-    SESSION_COOKIE_SECURE = not DEBUG
     PERMANENT_SESSION_LIFETIME = timedelta(days=7)
+
+    # The Secure flag has to follow the scheme of the *current* request:
+    # a cookie marked Secure is silently dropped by the browser over plain
+    # HTTP, which would break the two-laptop LAN demo. With
+    # SESSION_COOKIE_SECURE=auto the flag is added by an after_request hook
+    # for HTTPS requests only; set it to true/false to force the behaviour.
+    _secure_mode = os.environ.get("SESSION_COOKIE_SECURE", "auto").strip().lower()
+    if _secure_mode in ("true", "1", "yes", "on"):
+        SESSION_COOKIE_SECURE_MODE = "always"
+    elif _secure_mode in ("false", "0", "no", "off"):
+        SESSION_COOKIE_SECURE_MODE = "never"
+    else:
+        SESSION_COOKIE_SECURE_MODE = "auto"
+    # Flask needs a real boolean here.
+    SESSION_COOKIE_SECURE = SESSION_COOKIE_SECURE_MODE == "always"
 
     # --- CSRF -------------------------------------------------------------
     # ``None`` makes tokens session-scoped: they live as long as the session

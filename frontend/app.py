@@ -322,6 +322,11 @@ def create_app(config_class=Config):
                 "(see .env.example) – the default local fallback is SQLite."
             )
 
+        # Say which database is in use – it is the first thing anybody asks
+        # when the app behaves unexpectedly.
+        for key, engine in db.engines.items():
+            print(f"Database engine {key} -> {engine.url}")
+
     return app
 
 

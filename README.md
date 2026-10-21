@@ -214,6 +214,18 @@ python tools/smoke.py
 
 107 checks over every page, every endpoint and the error paths.
 
+### See that the data is real
+
+```bash
+python run.py                 # in one terminal
+python tools/proof.py         # in another
+```
+
+It registers an account over HTTP, opens the database file and shows the row
+it created (the password is stored as a scrypt hash, never in clear), writes
+a profile, a quiz result and a progress tick, reads them straight back out of
+SQLite, and logs out and back in.
+
 ### Run the load test
 
 ```bash
@@ -335,6 +347,7 @@ Career-Twin-main/
     ├── tools/loadtest.py
     ├── tools/smoke.py
     ├── tools/journey.py
+    ├── tools/proof.py
     ├── static/
     │   ├── css/tokens.css       the only place variables are defined
     │   ├── css/base.css layout.css components.css

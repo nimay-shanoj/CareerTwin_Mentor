@@ -30,6 +30,12 @@ if __name__ == "__main__":
     port = int(os.getenv("PORT", "5000"))
     debug = app.config.get("DEBUG", False)
 
+    # The auto-reloader runs the app in a child process, which needs a console
+    # it can talk to. That makes the server impossible to start detached
+    # (and doubles the number of processes to keep track of), so it is off by
+    # default. Set FLASK_RELOAD=1 to switch it on while editing templates.
+    use_reloader = os.getenv("FLASK_RELOAD", "0") == "1"
+
     # `allow_unsafe_werkzeug` lets the Flask development server serve
     # WebSocket connections through simple-websocket.
     socketio.run(
@@ -37,5 +43,6 @@ if __name__ == "__main__":
         host=host,
         port=port,
         debug=debug,
+        use_reloader=use_reloader,
         allow_unsafe_werkzeug=True,
     )
